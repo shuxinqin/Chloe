@@ -6,12 +6,13 @@ using System.Data;
 using System.Globalization;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Collections.Concurrent;
 
 namespace Chloe.Core.Emit
 {
     public static class ClassGenerator
     {
-        static readonly Dictionary<Assembly, ModuleBuilder> _moduleBuilders = new Dictionary<Assembly, ModuleBuilder>();
+        static readonly ConcurrentDictionary<Assembly,Lazy<ModuleBuilder>> _moduleBuilders = new ConcurrentDictionary<Assembly, Lazy<ModuleBuilder>>();
 
         public static Type CreateMRMType(MemberInfo member)
         {
@@ -22,26 +23,16 @@ namespace Chloe.Core.Emit
 
             var assembly = typeof(IMRM).Assembly;
 
-            ModuleBuilder moduleBuilder;
-            if (!_moduleBuilders.TryGetValue(assembly, out moduleBuilder))
-            {
-                lock (assembly)
-                {
-                    if (!_moduleBuilders.TryGetValue(assembly, out moduleBuilder))
-                    {
-                        var assemblyName =
+            ModuleBuilder moduleBuilder = _moduleBuilders.GetOrAdd(assembly, new Lazy<ModuleBuilder>(() => {
+                var assemblyName =
                               new AssemblyName(String.Format(CultureInfo.InvariantCulture, "ChloeMRMs-{0}", assembly.FullName));
-                        assemblyName.Version = new Version(1, 0, 0, 0);
+                assemblyName.Version = new Version(1, 0, 0, 0);
 
-                        var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(
-                             assemblyName, AssemblyBuilderAccess.Run);
-                        moduleBuilder = assemblyBuilder.DefineDynamicModule("ChloeMRMModule");
-
-                        _moduleBuilders.Add(assembly, moduleBuilder);
-                    }
-                }
-            }
-
+                var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(
+                     assemblyName, AssemblyBuilderAccess.Run);
+                return assemblyBuilder.DefineDynamicModule("ChloeMRMModule");
+            },true)).Value;
+            
             var typeAttributes = TypeAttributes.Class | TypeAttributes.NotPublic | TypeAttributes.Sealed;
             TypeBuilder tb = moduleBuilder.DefineType(string.Format("Chloe.Core.Mapper.MRMs.{0}_{1}_{2}", entityType.Name, member.Name, Guid.NewGuid().ToString("N")), typeAttributes, null, new Type[] { typeof(IMRM) });
 

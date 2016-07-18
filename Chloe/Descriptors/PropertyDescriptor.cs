@@ -1,13 +1,9 @@
-﻿using Chloe.DbExpressions;
-using System;
+﻿using System;
 using System.Reflection;
-using System.Collections.Generic;
-using System.Threading;
-using Chloe.Core;
 using Chloe.Core.Emit;
+using Chloe.DbExpressions;
 
-namespace Chloe.Descriptors
-{
+namespace Chloe.Descriptors {
     public class PropertyDescriptor : MappingMemberDescriptor
     {
         PropertyInfo _propertyInfo;
@@ -43,51 +39,17 @@ namespace Chloe.Descriptors
         {
             if (null == this._valueGetter)
             {
-                if (Monitor.TryEnter(this))
-                {
-                    try
-                    {
-                        if (null == this._valueGetter)
-                        {
-                            this._valueGetter = DelegateGenerator.CreateValueGetter(this._propertyInfo);
-                        }
-                    }
-                    finally
-                    {
-                        Monitor.Exit(this);
-                    }
-                }
-                else
-                {
-                    return this._propertyInfo.GetValue(instance, null);
-                }
+                this._valueGetter =DelegateGenerator.CreateValueGetter(this._propertyInfo); 
             }
 
             return this._valueGetter(instance);
         }
+        
         public override void SetValue(object instance, object value)
         {
             if (null == this._valueSetter)
             {
-                if (Monitor.TryEnter(this))
-                {
-                    try
-                    {
-                        if (null == this._valueSetter)
-                        {
-                            this._valueSetter = DelegateGenerator.CreateValueSetter(this._propertyInfo);
-                        }
-                    }
-                    finally
-                    {
-                        Monitor.Exit(this);
-                    }
-                }
-                else
-                {
-                    this._propertyInfo.SetValue(instance, value, null);
-                    return;
-                }
+                this._valueSetter = DelegateGenerator.CreateValueSetter(this._propertyInfo);
             }
 
             this._valueSetter(instance, value);

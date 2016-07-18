@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Collections.Concurrent;
 
 namespace Chloe.Descriptors
 {
@@ -217,24 +218,11 @@ namespace Chloe.Descriptors
             return memberDescriptor;
         }
 
-        static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, TypeDescriptor> InstanceCache = new System.Collections.Concurrent.ConcurrentDictionary<Type, TypeDescriptor>();
+        static readonly ConcurrentDictionary<Type, TypeDescriptor> InstanceCache = new ConcurrentDictionary<Type, TypeDescriptor>();
 
         public static TypeDescriptor GetDescriptor(Type type)
         {
-            TypeDescriptor instance;
-            if (!InstanceCache.TryGetValue(type, out instance))
-            {
-                lock (type)
-                {
-                    if (!InstanceCache.TryGetValue(type, out instance))
-                    {
-                        instance = new TypeDescriptor(type);
-                        InstanceCache.GetOrAdd(type, instance);
-                    }
-                }
-            }
-
-            return instance;
+            return InstanceCache.GetOrAdd(type, (t) => new TypeDescriptor(t));
         }
     }
 }
