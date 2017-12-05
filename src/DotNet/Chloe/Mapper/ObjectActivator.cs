@@ -67,7 +67,10 @@ namespace Chloe.Mapper
                 for (int i = 0; i < count; i++)
                 {
                     memberSetter = this._memberSetters[i];
-                    memberSetter.SetValue(obj, reader);
+                    if (!reader.IsDBNull(i))
+                    {
+                        memberSetter.SetValue(obj, reader);
+                    }
                 }
             }
             catch (ChloeException)
