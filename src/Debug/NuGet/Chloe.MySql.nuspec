@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Chloe.SQLite</id>
+    <id>Chloe.MySql</id>
     <version>3.9.1</version>
-    <title>Chloe.SQLite</title>
+    <title>Chloe.MySql</title>
     <authors>Shuxin Qin</authors>
     <owners>Shuxin Qin</owners>
     <licenseUrl>https://github.com/shuxinqin/Chloe/blob/master/LICENSE</licenseUrl>
@@ -14,13 +14,10 @@
 A lightweight and high-performance Object/Relational Mapping(ORM) library.
     </description>
     <copyright>Copyright 2016-2019</copyright>
-    <tags>Chloe,ORM,Data,SQLite,.NET Core</tags>
+    <tags>Chloe,ORM,Data,MySql,.NET Core</tags>
 
     <dependencies>
-      <group targetFramework="net40">
-        <dependency id="Chloe" version="3.9.1" />	  
-      </group>
-	  
+    
       <group targetFramework="netstandard2.0">
         <dependency id="Chloe" version="3.9.1" />
       </group> 
@@ -29,9 +26,8 @@ A lightweight and high-performance Object/Relational Mapping(ORM) library.
   </metadata>
 
   <files>
-	<file src="..\Chloe.SQLite\bin\Release\net40\Chloe.SQLite.dll" target="lib\net40" />
-    <file src="..\Chloe.SQLite\bin\Release\net40\Chloe.SQLite.xml" target="lib\net40" />
-	<file src="..\Chloe.SQLite\bin\Release\netstandard2.0\Chloe.SQLite.dll" target="lib\netstandard2.0"></file>
-    <file src="..\Chloe.SQLite\bin\Release\netstandard2.0\Chloe.SQLite.xml" target="lib\netstandard2.0"></file>
+	
+	<file src="..\netstandard2.0\Chloe.MySql.dll" target="lib\netstandard2.0"></file>
+    <file src="..\netstandard2.0\Chloe.MySql.xml" target="lib\netstandard2.0"></file>
   </files>
 </package>

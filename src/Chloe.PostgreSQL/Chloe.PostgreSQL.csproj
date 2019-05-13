@@ -26,6 +26,10 @@
   <PropertyGroup Condition="'$(TargetFramework)' == 'net40'">
     <DefineConstants>NETFX</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <OutputPath>..\Debug</OutputPath>
+    <DocumentationFile>..\Debug\Chloe.PostgreSQL.xml</DocumentationFile>
+  </PropertyGroup>
 
 
   <ItemGroup>

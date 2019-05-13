@@ -17,9 +17,7 @@ A lightweight and high-performance Object/Relational Mapping(ORM) library.
     <tags>Chloe,ORM,Data,.NET Core</tags>
    
    <dependencies>
-      <group targetFramework="net40">      
-      </group>
-	  
+    
       <group targetFramework="netstandard2.0">
         <dependency id="System.Reflection.Emit" version="4.3.0" />
       </group> 
@@ -28,9 +26,8 @@ A lightweight and high-performance Object/Relational Mapping(ORM) library.
   </metadata>
 
   <files>
-    <file src="..\Chloe\bin\Release\net40\Chloe.dll" target="lib\net40" />
-    <file src="..\Chloe\bin\Release\net40\Chloe.xml" target="lib\net40" />
-	<file src="..\Chloe\bin\Release\netstandard2.0\Chloe.dll" target="lib\netstandard2.0"></file>
-    <file src="..\Chloe\bin\Release\netstandard2.0\Chloe.xml" target="lib\netstandard2.0"></file>
+    
+	<file src="..\netstandard2.0\Chloe.dll" target="lib\netstandard2.0"></file>
+    <file src="..\netstandard2.0\Chloe.xml" target="lib\netstandard2.0"></file>
   </files>
 </package>

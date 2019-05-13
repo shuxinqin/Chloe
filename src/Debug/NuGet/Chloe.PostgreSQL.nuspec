@@ -17,10 +17,7 @@ A lightweight and high-performance Object/Relational Mapping(ORM) library.
     <tags>Chloe,ORM,Data,PostgreSQL,.NET Core</tags>
 
     <dependencies>
-      <group targetFramework="net40">
-        <dependency id="Chloe" version="3.9.1" />	  
-      </group>
-	  
+     
       <group targetFramework="netstandard2.0">
         <dependency id="Chloe" version="3.9.1" />
       </group> 
@@ -29,9 +26,8 @@ A lightweight and high-performance Object/Relational Mapping(ORM) library.
   </metadata>
 
   <files>
-	<file src="..\Chloe.PostgreSQL\bin\Release\net40\Chloe.PostgreSQL.dll" target="lib\net40" />
-    <file src="..\Chloe.PostgreSQL\bin\Release\net40\Chloe.PostgreSQL.xml" target="lib\net40" />
-	<file src="..\Chloe.PostgreSQL\bin\Release\netstandard2.0\Chloe.PostgreSQL.dll" target="lib\netstandard2.0"></file>
-    <file src="..\Chloe.PostgreSQL\bin\Release\netstandard2.0\Chloe.PostgreSQL.xml" target="lib\netstandard2.0"></file>
+	 
+	<file src="..\netstandard2.0\Chloe.PostgreSQL.dll" target="lib\netstandard2.0"></file>
+    <file src="..\netstandard2.0\Chloe.PostgreSQL.xml" target="lib\netstandard2.0"></file>
   </files>
 </package>

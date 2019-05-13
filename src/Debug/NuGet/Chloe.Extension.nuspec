@@ -14,10 +14,7 @@
     <copyright>Copyright 2016-2019</copyright>
     <tags>Chloe,ORM,Data</tags>
 
-	<dependencies>
-      <group targetFramework="net40">
-        <dependency id="Chloe" version="3.9.1" />	  
-      </group>
+	<dependencies> 
 	  
       <group targetFramework="netstandard2.0">
         <dependency id="Chloe" version="3.9.1" />
@@ -27,10 +24,8 @@
   </metadata>
 
   
-  <files>
-	<file src="..\Chloe.Extension\bin\Release\net40\Chloe.Extension.dll" target="lib\net40" />
-    <file src="..\Chloe.Extension\bin\Release\net40\Chloe.Extension.xml" target="lib\net40" />
-	<file src="..\Chloe.Extension\bin\Release\netstandard2.0\Chloe.Extension.dll" target="lib\netstandard2.0"></file>
-    <file src="..\Chloe.Extension\bin\Release\netstandard2.0\Chloe.Extension.xml" target="lib\netstandard2.0"></file>
+  <files>	 
+	<file src="..\netstandard2.0\Chloe.Extension.dll" target="lib\netstandard2.0"></file>
+    <file src="..\netstandard2.0\Chloe.Extension.xml" target="lib\netstandard2.0"></file>
   </files>
 </package>
