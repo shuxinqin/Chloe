@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Chloe.Extension</id>
-    <version>3.8.0</version>
+    <version>3.9.1</version>
     <title>Chloe.Extension</title>
     <authors>Shuxin Qin</authors>
     <owners>Shuxin Qin</owners>
@@ -16,11 +16,11 @@
 
 	<dependencies>
       <group targetFramework="net40">
-        <dependency id="Chloe" version="3.8.0" />	  
+        <dependency id="Chloe" version="3.9.1" />	  
       </group>
 	  
       <group targetFramework="netstandard2.0">
-        <dependency id="Chloe" version="3.8.0" />
+        <dependency id="Chloe" version="3.9.1" />
       </group> 
     </dependencies>
 

@@ -730,7 +730,8 @@ namespace Chloe.PostgreSQL
             }
             else if (objType == UtilConstants.TypeOfString)
             {
-                this._sqlBuilder.Append("N'", exp.Value, "'");
+                //this._sqlBuilder.Append("N'", exp.Value, "'");
+                this._sqlBuilder.Append("'", exp.Value, "'");
                 return exp;
             }
             else if (objType.IsEnum)

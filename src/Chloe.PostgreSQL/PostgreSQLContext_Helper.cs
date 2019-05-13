@@ -55,6 +55,31 @@ namespace Chloe.PostgreSQL
             string sqlTemplate = sqlBuilder.ToString();
             return sqlTemplate;
         }
+        string AppendUpdateRangeSqlTemplate(DbTable table, List<PropertyDescriptor> mappingPropertyDescriptors)
+        {
+            StringBuilder sqlBuilder = new StringBuilder();
+
+            sqlBuilder.Append("UPDATE ");
+            sqlBuilder.Append(this.AppendTableName(table));
+            sqlBuilder.Append(" SET ");
+            PropertyDescriptor primaryKeyDescriptor = null;
+            for (int i = 0; i < mappingPropertyDescriptors.Count; i++)
+            {
+                PropertyDescriptor mappingPropertyDescriptor = mappingPropertyDescriptors[i];
+                if (mappingPropertyDescriptor.IsPrimaryKey)
+                {
+                    primaryKeyDescriptor = mappingPropertyDescriptor;
+                    continue;
+                }
+                if (i > 0) sqlBuilder.Append(", ");
+                sqlBuilder.Append(Utils.QuoteName(mappingPropertyDescriptor.Column.Name, this.ConvertToLowercase));
+                sqlBuilder.Append(" {" + i + "} ");
+            }
+            sqlBuilder.Append(" WHERE " + Utils.QuoteName(primaryKeyDescriptor.Column.Name, this.ConvertToLowercase));
+            sqlBuilder.Append(" = {PK} ");
+            string sqlTemplate = sqlBuilder.ToString();
+            return sqlTemplate;
+        }
         string AppendTableName(DbTable table)
         {
             if (string.IsNullOrEmpty(table.Schema))

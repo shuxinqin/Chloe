@@ -460,6 +460,135 @@ namespace Chloe.PostgreSQL
             }
         }
 
+        /// <summary>
+        /// 批量更新数据
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="entities"></param>
+        /// <param name="table"></param>
+        public override int UpdateRange<TEntity>(List<TEntity> entities, string table = null)
+        {
+            PublicHelper.CheckNull(entities);
+            if (entities.Count == 0)
+                return 0;
+
+            int maxParameters = 2100;
+            int batchSize = 50; /* 每批实体大小，此值通过测试得出相对插入速度比较快的一个值 */
+
+            TypeDescriptor typeDescriptor = EntityTypeContainer.GetDescriptor(typeof(TEntity));
+
+            var e = typeDescriptor.PropertyDescriptors as IEnumerable<PropertyDescriptor>;
+            
+            List<PropertyDescriptor> mappingPropertyDescriptors = e.ToList();
+            int maxDbParamsCount = maxParameters - mappingPropertyDescriptors.Count; /* 控制一个 sql 的参数个数 */
+
+            DbTable dbTable = string.IsNullOrEmpty(table) ? typeDescriptor.Table : new DbTable(table, typeDescriptor.Table.Schema);
+            string sqlTemplate = this.AppendUpdateRangeSqlTemplate(dbTable, mappingPropertyDescriptors);
+
+            Action updateAction = () =>
+            {
+                int batchCount = 0;
+                List<DbParam> dbParams = new List<DbParam>();
+                StringBuilder sqlBuilder = new StringBuilder();
+
+                for (int i = 0; i < entities.Count; i++)
+                {
+                    var entity = entities[i];
+
+                    if (batchCount > 0)
+                        sqlBuilder.Append(";" + Environment.NewLine);
+
+                    var str = sqlTemplate;
+                    //一个实体对象构造SQL
+                    for (int j = 0; j < mappingPropertyDescriptors.Count; j++)
+                    {
+                        PropertyDescriptor mappingPropertyDescriptor = mappingPropertyDescriptors[j];
+                        object val = mappingPropertyDescriptor.GetValue(entity);
+
+                        if (mappingPropertyDescriptor.IsPrimaryKey)
+                        {
+                            string pkName = UtilConstants.ParameterNamePrefix + mappingPropertyDescriptor.Column.Name + i;
+                            DbParam pkParam = new DbParam(pkName, val) { DbType = mappingPropertyDescriptor.Column.DbType };
+                            dbParams.Add(pkParam);
+                            str = str.Replace("{PK}", pkName);
+                        }
+
+                        if (val == null)
+                        {
+                            str = str.Replace("{" + j + "}", "= NULL");
+                            continue;
+                        }
+
+                        Type valType = val.GetType();
+                        if (valType.IsEnum)
+                        {
+                            val = Convert.ChangeType(val, Enum.GetUnderlyingType(valType));
+                            valType = val.GetType();
+                        }
+
+                        if (Utils.IsToStringableNumericType(valType))
+                        {
+                            str = str.Replace("{" + j + "}", " = " + val.ToString());
+                            continue;
+                        }
+
+                        if (val is bool)
+                        {
+                            if ((bool)val == true)
+                                str = str.Replace("{" + j + "}", "= true");
+                            else
+                                str = str.Replace("{" + j + "}", "= false");
+                            continue;
+                        }
+
+                        string paramName = UtilConstants.ParameterNamePrefix + dbParams.Count.ToString();
+                        DbParam dbParam = new DbParam(paramName, val) { DbType = mappingPropertyDescriptor.Column.DbType };
+                        dbParams.Add(dbParam);
+                        str = str.Replace("{" + j + "}", "= " + paramName);
+                    }
+                    sqlBuilder.Append(str);
+                    batchCount++;
+
+                    if ((batchCount >= 20 && dbParams.Count >= 120/*参数个数太多也会影响速度*/) || dbParams.Count >= maxDbParamsCount || batchCount >= batchSize || (i + 1) == entities.Count)
+                    {
+                        //sqlBuilder.Insert(0, sqlTemplate);
+                        string sql = sqlBuilder.ToString();
+                        this.Session.ExecuteNonQuery(sql, dbParams.ToArray());
+
+                        sqlBuilder.Clear();
+                        dbParams.Clear();
+                        batchCount = 0;
+                    }
+                }
+            };
+
+            Action fAction = () =>
+            {
+                updateAction();
+            };
+
+            if (this.Session.IsInTransaction)
+            {
+                fAction();
+            }
+            else
+            {
+                /* 因为分批插入，所以需要开启事务保证数据一致性 */
+                this.Session.BeginTransaction();
+                try
+                {
+                    fAction();
+                    this.Session.CommitTransaction();
+                }
+                catch
+                {
+                    if (this.Session.IsInTransaction)
+                        this.Session.RollbackTransaction();
+                    throw;
+                }
+            }
+            return entities.Count;
+        }
 
         protected override string GetSelectLastInsertIdClause()
         {

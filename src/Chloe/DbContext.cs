@@ -429,6 +429,11 @@ namespace Chloe
             return this.ExecuteNonQuery(e);
         }
 
+        public virtual int UpdateRange<TEntity>(List<TEntity> entities, string table = null)
+        {
+            throw new NotImplementedException();
+        }
+
         public virtual int Delete<TEntity>(TEntity entity)
         {
             return this.Delete(entity, null);

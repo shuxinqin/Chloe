@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Chloe.MySql</id>
-    <version>3.9.0</version>
+    <version>3.9.1</version>
     <title>Chloe.MySql</title>
     <authors>Shuxin Qin</authors>
     <owners>Shuxin Qin</owners>
@@ -18,11 +18,11 @@ A lightweight and high-performance Object/Relational Mapping(ORM) library.
 
     <dependencies>
       <group targetFramework="net40">
-        <dependency id="Chloe" version="3.9.0" />	  
+        <dependency id="Chloe" version="3.9.1" />	  
       </group>
 	  
       <group targetFramework="netstandard2.0">
-        <dependency id="Chloe" version="3.9.0" />
+        <dependency id="Chloe" version="3.9.1" />
       </group> 
     </dependencies>
     
