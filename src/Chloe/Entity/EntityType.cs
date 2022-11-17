@@ -9,10 +9,14 @@ namespace Chloe.Entity
 {
     public class EntityType
     {
-        public EntityType(Type type)
+        public EntityType(Type type) : this(type, EntityNameConfig.Of(type))
+        {
+        }
+
+        public EntityType(Type type, EntityNameConfig config)
         {
             this.Type = type;
-            this.TableName = type.Name;
+            this.TableName = config.MapCamelCaseToUnderscore && config.MapTableName ? Utils.TranslateCamelCaseToUnderscore(type.Name, config.TablePrefix) : type.Name;
 
             PropertyInfo[] properties = this.Type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(a => a.GetSetMethod() != null && a.GetGetMethod() != null).ToArray();
 
@@ -22,7 +26,7 @@ namespace Chloe.Entity
                 if (!MappingTypeSystem.IsMappingType(property.PropertyType, out mappingType))
                     continue;
 
-                PrimitiveProperty primitiveProperty = new PrimitiveProperty(property);
+                PrimitiveProperty primitiveProperty = new PrimitiveProperty(property, config);
                 primitiveProperty.DbType = mappingType.DbType;
                 primitiveProperty.IsNullable = property.PropertyType.CanNull();
 
