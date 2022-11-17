@@ -13,7 +13,7 @@ namespace ChloeDemo
 {
     public class EntityMapBase<TEntity> : EntityTypeBuilder<TEntity> where TEntity : EntityBase
     {
-        public EntityMapBase()
+        public EntityMapBase() : base(new EntityNameConfig(true))
         {
             this.Property(a => a.Id).IsAutoIncrement().IsPrimaryKey();
         }
@@ -50,7 +50,7 @@ namespace ChloeDemo
 
     public class PersonExMap : EntityTypeBuilder<PersonEx>
     {
-        public PersonExMap()
+        public PersonExMap() : base(new EntityNameConfig(true))
         {
             this.MapTo("PersonEx");
             this.Property(a => a.Id).IsPrimaryKey().IsAutoIncrement(false);
@@ -85,7 +85,7 @@ namespace ChloeDemo
 
     public class TestEntityMap : EntityTypeBuilder<TestEntity>
     {
-        public TestEntityMap()
+        public TestEntityMap() : base(new EntityNameConfig(true, true, "sys_", "col_"))
         {
             this.Property(a => a.Id).IsAutoIncrement().IsPrimaryKey();
             this.HasQueryFilter(a => a.Id > 0);
