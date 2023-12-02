@@ -5,6 +5,7 @@ using System.Text;
 
 namespace ChloeDemo.Sharding
 {
+    [CamelCaseToUnderscore(false)]
     public class Order
     {
         public Order()

@@ -6,9 +6,9 @@ namespace Chloe.Entity
 {
     public class PrimitiveProperty : PropertyBase
     {
-        public PrimitiveProperty(PropertyInfo property) : base(property)
+        public PrimitiveProperty(PropertyInfo property, EntityNameConfig config) : base(property)
         {
-            this.ColumnName = property.Name;
+            this.ColumnName = config.MapCamelCaseToUnderscore ? Utils.TranslateCamelCaseToUnderscore(property.Name, config.ColumnPrefix) : property.Name;
         }
 
         public string ColumnName { get; set; }

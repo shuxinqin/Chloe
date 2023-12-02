@@ -9,6 +9,12 @@ namespace Chloe.Entity
         {
             this.EntityType = new EntityType(type);
         }
+
+        public EntityTypeBuilder(EntityNameConfig config)
+        {
+            this.EntityType = new EntityType(typeof(TEntity), config);
+        }
+
         public EntityType EntityType { get; private set; }
 
         public IEntityTypeBuilder MapTo(string table)

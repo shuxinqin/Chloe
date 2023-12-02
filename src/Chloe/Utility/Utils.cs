@@ -65,5 +65,10 @@ namespace Chloe
         {
             return t == typeof(Int16) || t == typeof(Int32) || t == typeof(Int64);
         }
+
+        public static string TranslateCamelCaseToUnderscore(string name, string prefix)
+        {
+            return prefix + UtilConstants.CamelCaseNameTranslateRegex.Replace(name, "_$0").TrimStart('_');
+        }
     }
 }
