@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/tools/">
+    <File Path="tools/Chloe.Dameng.nuspec" />
+    <File Path="tools/Chloe.Extension.nuspec" />
+    <File Path="tools/Chloe.KingbaseES.nuspec" />
+    <File Path="tools/Chloe.MySql.nuspec" />
+    <File Path="tools/Chloe.nuspec" />
+    <File Path="tools/Chloe.Oracle.nuspec" />
+    <File Path="tools/Chloe.PostgreSQL.nuspec" />
+    <File Path="tools/Chloe.SQLite.nuspec" />
+    <File Path="tools/Chloe.SqlServer.nuspec" />
+    <File Path="tools/Pack-Chloe-All.bat" />
+  </Folder>
+  
+  <Project Path="Chloe/Chloe.csproj" />
+  <Project Path="Chloe.Dameng/Chloe.Dameng.csproj" />
+  <Project Path="Chloe.Extension/Chloe.Extension.csproj" />
+  <Project Path="Chloe.KingbaseES/Chloe.KingbaseES.csproj" />
+  <Project Path="Chloe.MySql/Chloe.MySql.csproj" />
+  <Project Path="Chloe.Oracle/Chloe.Oracle.csproj" />
+  <Project Path="Chloe.PostgreSQL/Chloe.PostgreSQL.csproj" />
+  <Project Path="Chloe.SQLite/Chloe.SQLite.csproj" />
+  <Project Path="Chloe.SqlServer/Chloe.SqlServer.csproj" />
+  <Project Path="ChloeDemo/ChloeDemo.csproj" />
+
+</Solution>
