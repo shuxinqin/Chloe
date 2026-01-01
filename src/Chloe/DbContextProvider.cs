@@ -1,14 +1,15 @@
 ﻿using Chloe.Core;
-using Chloe.Visitors;
 using Chloe.Data;
 using Chloe.DbExpressions;
 using Chloe.Descriptors;
 using Chloe.Exceptions;
 using Chloe.Infrastructure;
+using Chloe.Infrastructure.Interception;
 using Chloe.Query;
 using Chloe.Query.Internals;
 using Chloe.Threading.Tasks;
 using Chloe.Utility;
+using Chloe.Visitors;
 using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -23,13 +24,16 @@ namespace Chloe
         Dictionary<Type, List<LambdaExpression>> _queryFilters = new Dictionary<Type, List<LambdaExpression>>();
         TrackingEntityContainer _trackingEntityContainer;
 
-        protected DbContextProvider(DbOptions options)
+        protected DbContextProvider(DbOptions options, DbContext dbContext)
         {
             PublicHelper.CheckNull(options, nameof(options));
 
             this.Options = options;
+            this.Context = dbContext;
             this._session = new DbSessionProvider(this);
         }
+
+        public DbContext Context { get; private set; }
 
         public DbOptions Options { get; private set; }
 
@@ -101,7 +105,13 @@ namespace Chloe
         }
         public virtual IQuery<TEntity> Query<TEntity>(string table, LockType @lock)
         {
-            return new Query<TEntity>(this, table, @lock);
+            IQuery<TEntity> query = new Query<TEntity>(this, table, @lock);
+            for (int i = 0; i < this.Context.Butler.DbContextInterceptors.Count; i++)
+            {
+                query = this.Context.Butler.DbContextInterceptors[i].QueryCreated(this.Context, query);
+            }
+
+            return query;
         }
 
         public virtual List<T> SqlQuery<T>(string sql, CommandType cmdType, params DbParam[] parameters)
@@ -190,6 +200,11 @@ namespace Chloe
                 insertExpression.AppendInsertColumn(firstIgnoredProperty.Column, valExp);
             }
 
+            insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, entity, exp);
+            }, insertExpression);
+
             PrimitivePropertyDescriptor autoIncrementPropertyDescriptor = typeDescriptor.AutoIncrement;
             if (autoIncrementPropertyDescriptor == null)
             {
@@ -275,6 +290,11 @@ namespace Chloe
                     PublicHelper.EnsurePrimaryKeyNotNull(keyPropertyDescriptor, keyVal);
                 }
             }
+
+            insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, content, exp);
+            }, insertExpression);
 
             if (keyPropertyDescriptor == null || !keyPropertyDescriptor.IsAutoIncrement)
             {
@@ -364,11 +384,17 @@ namespace Chloe
                 keyValues.Add(rowVersionDescriptor, rowVersionOldValue);
             }
 
-            if (updateExpression.UpdateColumns.Count == 0)
-                return 0;
 
             DbExpression conditionExp = PublicHelper.MakeCondition(keyValues, dbTable);
             updateExpression.Condition = conditionExp;
+
+            updateExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.UpdateExecuting<TEntity>(this.Context, entity, exp);
+            }, updateExpression);
+
+            if (updateExpression.UpdateColumns.Count == 0)
+                return 0;
 
             int rowsAffected = await this.ExecuteNonQuery(updateExpression, @async);
 
@@ -423,6 +449,11 @@ namespace Chloe
                 updateExpression.AppendUpdateColumn(propertyDescriptor.Column, expressionParser.Parse(kv.Value));
             }
 
+            updateExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.UpdateExecuting<TEntity>(this.Context, condition, content, exp);
+            }, updateExpression);
+
             if (updateExpression.UpdateColumns.Count == 0)
                 return 0;
 
@@ -463,6 +494,11 @@ namespace Chloe
             DbExpression conditionExp = PublicHelper.MakeCondition(keyValues, dbTable);
             DbDeleteExpression e = new DbDeleteExpression(dbTable, conditionExp);
 
+            e = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.DeleteExecuting<TEntity>(this.Context, entity, exp);
+            }, e);
+
             int rowsAffected = await this.ExecuteNonQuery(e, @async);
 
             if (typeDescriptor.HasRowVersion())
@@ -491,6 +527,11 @@ namespace Chloe
             DbExpression conditionExp = FilterPredicateParser.Parse(new QueryContext(this), QueryObjectExpressionTransformer.Transform(condition), typeDescriptor, dbTable, null);
 
             DbDeleteExpression e = new DbDeleteExpression(dbTable, conditionExp);
+
+            e = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.DeleteExecuting<TEntity>(this.Context, condition, exp);
+            }, e);
 
             return this.ExecuteNonQuery(e, @async);
         }
@@ -530,6 +571,16 @@ namespace Chloe
             {
                 throw new ObjectDisposedException(this.GetType().FullName);
             }
+        }
+
+        protected TExp ExecuteDbContextInterceptor<TExp>(Func<IDbContextInterceptor, TExp, TExp> action, TExp exp)
+        {
+            for (int i = 0; i < this.Context.Butler.DbContextInterceptors.Count; i++)
+            {
+                exp = action(this.Context.Butler.DbContextInterceptors[i], exp);
+            }
+
+            return exp;
         }
     }
 }

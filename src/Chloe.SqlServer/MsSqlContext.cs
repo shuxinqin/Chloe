@@ -86,9 +86,9 @@ namespace Chloe.SqlServer
             this._options = options;
         }
 
-        public IDbContextProvider CreateDbContextProvider()
+        public IDbContextProvider CreateDbContextProvider(IDbContext dbContext)
         {
-            return new MsSqlContextProvider(this._options);
+            return new MsSqlContextProvider(this._options, dbContext as DbContext);
         }
     }
 }

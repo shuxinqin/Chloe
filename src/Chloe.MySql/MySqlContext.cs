@@ -60,9 +60,9 @@ namespace Chloe.MySql
             this._options = options;
         }
 
-        public IDbContextProvider CreateDbContextProvider()
+        public IDbContextProvider CreateDbContextProvider(IDbContext dbContext)
         {
-            return new MySqlContextProvider(this._options);
+            return new MySqlContextProvider(this._options, dbContext as DbContext);
         }
     }
 }

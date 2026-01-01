@@ -60,9 +60,9 @@ namespace Chloe.Oracle
             this._options = options;
         }
 
-        public IDbContextProvider CreateDbContextProvider()
+        public IDbContextProvider CreateDbContextProvider(IDbContext dbContext)
         {
-            return new OracleContextProvider(this._options);
+            return new OracleContextProvider(this._options, dbContext as DbContext);
         }
     }
 }

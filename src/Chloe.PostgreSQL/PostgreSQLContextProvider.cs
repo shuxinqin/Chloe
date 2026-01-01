@@ -16,17 +16,17 @@ namespace Chloe.PostgreSQL
     {
         DatabaseProvider _databaseProvider;
 
-        public PostgreSQLContextProvider(Func<IDbConnection> dbConnectionFactory) : this(new DbConnectionFactory(dbConnectionFactory))
+        public PostgreSQLContextProvider(Func<IDbConnection> dbConnectionFactory, DbContext dbContext) : this(new DbConnectionFactory(dbConnectionFactory), dbContext)
         {
 
         }
 
-        public PostgreSQLContextProvider(IDbConnectionFactory dbConnectionFactory) : this(new PostgreSQLOptions() { DbConnectionFactory = dbConnectionFactory })
+        public PostgreSQLContextProvider(IDbConnectionFactory dbConnectionFactory, DbContext dbContext) : this(new PostgreSQLOptions() { DbConnectionFactory = dbConnectionFactory }, dbContext)
         {
 
         }
 
-        public PostgreSQLContextProvider(PostgreSQLOptions options) : base(options)
+        public PostgreSQLContextProvider(PostgreSQLOptions options, DbContext dbContext) : base(options, dbContext)
         {
             this._databaseProvider = new DatabaseProvider(this);
         }
@@ -141,6 +141,11 @@ namespace Chloe.PostgreSQL
                 insertExpression.Returns.Add(item.Column);
             }
 
+            insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, entity, exp);
+            }, insertExpression);
+
             if (mappers.Count == 0)
             {
                 await this.ExecuteNonQuery(insertExpression, @async);
@@ -234,11 +239,21 @@ namespace Chloe.PostgreSQL
             }
             if (!keyPropertyDescriptor.IsAutoIncrement && !keyPropertyDescriptor.HasSequence())
             {
+                insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+                {
+                    return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, content, exp);
+                }, insertExpression);
+
                 await this.ExecuteNonQuery(insertExpression, @async);
                 return keyVal;
             }
 
             insertExpression.Returns.Add(keyPropertyDescriptor.Column);
+
+            insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, content, exp);
+            }, insertExpression);
 
             IDbExpressionTranslator translator = this.DatabaseProvider.CreateDbExpressionTranslator();
             DbCommandInfo dbCommandInfo = translator.Translate(insertExpression);
@@ -275,6 +290,11 @@ namespace Chloe.PostgreSQL
 
             Func<Task> insertAction = async () =>
             {
+                for (int i = 0; i < this.Context.Butler.DbContextInterceptors.Count; i++)
+                {
+                    this.Context.Butler.DbContextInterceptors[i].InsertRangeExecuting(this.Context, entities);
+                }
+
                 int countOfCurrentBatch = 0;
                 List<DbParam> dbParams = new List<DbParam>();
                 StringBuilder sqlBuilder = new StringBuilder();

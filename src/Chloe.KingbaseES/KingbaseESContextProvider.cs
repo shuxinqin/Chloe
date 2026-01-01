@@ -11,17 +11,17 @@ namespace Chloe.KingbaseES
     {
         DatabaseProvider _databaseProvider;
 
-        public KingbaseESContextProvider(Func<IDbConnection> dbConnectionFactory) : this(new DbConnectionFactory(dbConnectionFactory))
+        public KingbaseESContextProvider(Func<IDbConnection> dbConnectionFactory, DbContext dbContext) : this(new DbConnectionFactory(dbConnectionFactory), dbContext)
         {
 
         }
 
-        public KingbaseESContextProvider(IDbConnectionFactory dbConnectionFactory) : this(new KingbaseESOptions() { DbConnectionFactory = dbConnectionFactory })
+        public KingbaseESContextProvider(IDbConnectionFactory dbConnectionFactory, DbContext dbContext) : this(new KingbaseESOptions() { DbConnectionFactory = dbConnectionFactory }, dbContext)
         {
 
         }
 
-        public KingbaseESContextProvider(KingbaseESOptions options) : base(options)
+        public KingbaseESContextProvider(KingbaseESOptions options, DbContext dbContext) : base(options, dbContext)
         {
             this._databaseProvider = new DatabaseProvider(this);
         }
@@ -104,6 +104,11 @@ namespace Chloe.KingbaseES
 
             Func<Task> insertAction = async () =>
             {
+                for (int i = 0; i < this.Context.Butler.DbContextInterceptors.Count; i++)
+                {
+                    this.Context.Butler.DbContextInterceptors[i].InsertRangeExecuting(this.Context, entities);
+                }
+
                 int countOfCurrentBatch = 0;
                 List<DbParam> dbParams = new List<DbParam>();
                 StringBuilder sqlBuilder = new StringBuilder();

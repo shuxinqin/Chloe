@@ -1,4 +1,5 @@
-﻿using Chloe.Sharding;
+﻿using Chloe.Infrastructure.Interception;
+using Chloe.Sharding;
 using System.Data;
 using System.Linq.Expressions;
 
@@ -12,6 +13,12 @@ namespace Chloe
         IDbSession Session { get; }
 
         void TrackEntity(object entity);
+
+        /// <summary>
+        /// 添加上下文拦截器。注：仅对当前上下文起作用。
+        /// </summary>
+        /// <param name="interceptor"></param>
+        void AddInterceptor(IDbContextInterceptor interceptor);
 
         /// <summary>
         /// 针对当前上下文设置过滤器。

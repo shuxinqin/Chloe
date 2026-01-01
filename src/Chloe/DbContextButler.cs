@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace Chloe
 {
-    class DbContextButler : IDisposable
+    public class DbContextButler : IDisposable
     {
         bool _disposed = false;
 
@@ -23,7 +23,8 @@ namespace Chloe
         public DbContext DbContext { get; private set; }
 
         public List<DataSourceDbContextProviderPair> PersistedDbContextProviders { get; set; } = new List<DataSourceDbContextProviderPair>();
-        public List<IDbCommandInterceptor> Interceptors { get; } = new List<IDbCommandInterceptor>();
+        public List<IDbCommandInterceptor> DbCommandInterceptors { get; } = new List<IDbCommandInterceptor>();
+        public List<IDbContextInterceptor> DbContextInterceptors { get; } = new List<IDbContextInterceptor>();
         public Dictionary<Type, List<LambdaExpression>> QueryFilters { get; } = new Dictionary<Type, List<LambdaExpression>>();
 
         public Dictionary<Type, IShardingConfig> ContextShardingConfigs
@@ -90,23 +91,29 @@ namespace Chloe
             }
         }
 
-        public void AddInterceptor(IDbCommandInterceptor interceptor)
+        public void AddDbCommandInterceptor(IDbCommandInterceptor interceptor)
         {
             PublicHelper.CheckNull(interceptor, nameof(interceptor));
-            this.Interceptors.Add(interceptor);
+            this.DbCommandInterceptors.Add(interceptor);
             foreach (var pair in this.PersistedDbContextProviders)
             {
                 pair.DbContextProvider.Session.AddInterceptor(interceptor);
             }
         }
-        public void RemoveInterceptor(IDbCommandInterceptor interceptor)
+        public void RemoveDbCommandInterceptor(IDbCommandInterceptor interceptor)
         {
             PublicHelper.CheckNull(interceptor, nameof(interceptor));
-            this.Interceptors.Remove(interceptor);
+            this.DbCommandInterceptors.Remove(interceptor);
             foreach (var pair in this.PersistedDbContextProviders)
             {
                 pair.DbContextProvider.Session.RemoveInterceptor(interceptor);
             }
+        }
+
+        public void AddDbContextInterceptor(IDbContextInterceptor dbContextInterceptor)
+        {
+            PublicHelper.CheckNull(dbContextInterceptor, nameof(dbContextInterceptor));
+            this.DbContextInterceptors.Add(dbContextInterceptor);
         }
 
         public void BeginTransaction(IsolationLevel? il)
@@ -266,7 +273,7 @@ namespace Chloe
                     throw new InvalidOperationException("No provider specified.");
                 }
 
-                var defaultDbContextProvider = this.DbContext.DbContextProviderFactory.CreateDbContextProvider();
+                var defaultDbContextProvider = this.DbContext.DbContextProviderFactory.CreateDbContextProvider(this.DbContext);
                 this.AppendFeatures(defaultDbContextProvider);
 
                 var physicDataSource = new PhysicDataSource(DbContext.DefaultProviderDataSourceName, this.DbContext.DbContextProviderFactory);
@@ -294,7 +301,7 @@ namespace Chloe
             DataSourceDbContextProviderPair pair = this.PersistedDbContextProviders.FirstOrDefault(a => a.DataSource.Name == dataSource.Name);
             if (pair == null)
             {
-                IDbContextProvider dbContextProvider = dataSource.DbContextProviderFactory.CreateDbContextProvider();
+                IDbContextProvider dbContextProvider = dataSource.DbContextProviderFactory.CreateDbContextProvider(this.DbContext);
                 this.AppendFeatures(dbContextProvider);
 
                 pair = new DataSourceDbContextProviderPair(dataSource, dbContextProvider);
@@ -313,7 +320,7 @@ namespace Chloe
                 return pool;
             }
 
-            pool = new SharedDbContextProviderPool(this.DbContext.ShardingOptions.MaxConnectionsPerDataSource, dataSource.DbContextProviderFactory.CreateDbContextProvider);
+            pool = new SharedDbContextProviderPool(this.DbContext.ShardingOptions.MaxConnectionsPerDataSource, () => dataSource.DbContextProviderFactory.CreateDbContextProvider(this.DbContext));
             return pool;
         }
 
@@ -345,7 +352,7 @@ namespace Chloe
         }
         void AppendSessionInterceptors(IDbContextProvider dbContextProvider)
         {
-            foreach (var interceptor in this.DbContext.Butler.Interceptors)
+            foreach (var interceptor in this.DbContext.Butler.DbCommandInterceptors)
             {
                 dbContextProvider.Session.AddInterceptor(interceptor);
             }

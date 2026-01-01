@@ -60,9 +60,9 @@ namespace Chloe.SQLite
             this._options = options;
         }
 
-        public IDbContextProvider CreateDbContextProvider()
+        public IDbContextProvider CreateDbContextProvider(IDbContext dbContext)
         {
-            return new SQLiteContextProvider(this._options);
+            return new SQLiteContextProvider(this._options, dbContext as DbContext);
         }
     }
 }

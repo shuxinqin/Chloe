@@ -25,22 +25,22 @@ namespace Chloe.SqlServer
     {
         DatabaseProvider _databaseProvider;
 
-        public MsSqlContextProvider(string connString) : this(new DefaultDbConnectionFactory(connString))
+        public MsSqlContextProvider(string connString, DbContext dbContext) : this(new DefaultDbConnectionFactory(connString), dbContext)
         {
 
         }
 
-        public MsSqlContextProvider(Func<IDbConnection> dbConnectionFactory) : this(new DbConnectionFactory(dbConnectionFactory))
+        public MsSqlContextProvider(Func<IDbConnection> dbConnectionFactory, DbContext dbContext) : this(new DbConnectionFactory(dbConnectionFactory), dbContext)
         {
 
         }
 
-        public MsSqlContextProvider(IDbConnectionFactory dbConnectionFactory) : this(new MsSqlOptions() { DbConnectionFactory = dbConnectionFactory })
+        public MsSqlContextProvider(IDbConnectionFactory dbConnectionFactory, DbContext dbContext) : this(new MsSqlOptions() { DbConnectionFactory = dbConnectionFactory }, dbContext)
         {
 
         }
 
-        public MsSqlContextProvider(MsSqlOptions options) : base(options)
+        public MsSqlContextProvider(MsSqlOptions options, DbContext dbContext) : base(options, dbContext)
         {
             this._databaseProvider = new DatabaseProvider(this);
         }
@@ -155,6 +155,11 @@ namespace Chloe.SqlServer
 
             if (outputColumns.Count == 0)
             {
+                insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+                {
+                    return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, entity, exp);
+                }, insertExpression);
+
                 await this.ExecuteNonQuery(insertExpression, @async);
                 return entity;
             }
@@ -164,6 +169,11 @@ namespace Chloe.SqlServer
             DbCommandInfo dbCommandInfo;
             if (outputColumns.Count == 1 && outputColumns[0].IsAutoIncrement)
             {
+                insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+                {
+                    return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, entity, exp);
+                }, insertExpression);
+
                 dbCommandInfo = translator.Translate(insertExpression);
 
                 /* 自增 id 不能用 output inserted.Id 输出，因为如果表设置了触发器的话会报错 */
@@ -177,6 +187,11 @@ namespace Chloe.SqlServer
                     mappers.Add(PublicHelper.GetMapper<TEntity>(outputColumn, insertExpression.Returns.Count));
                     insertExpression.Returns.Add(outputColumn.Column);
                 }
+
+                insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+                {
+                    return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, entity, exp);
+                }, insertExpression);
 
                 dbCommandInfo = translator.Translate(insertExpression);
             }
@@ -258,26 +273,58 @@ namespace Chloe.SqlServer
 
             if (keyPropertyDescriptor == null)
             {
+                insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+                {
+                    return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, content, exp);
+                }, insertExpression);
+
                 await this.ExecuteNonQuery(insertExpression, @async);
                 return keyVal; /* It will return null if an entity does not define primary key. */
             }
             if (!keyPropertyDescriptor.IsAutoIncrement && !keyPropertyDescriptor.HasSequence())
             {
+                insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+                {
+                    return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, content, exp);
+                }, insertExpression);
+
                 await this.ExecuteNonQuery(insertExpression, @async);
                 return keyVal;
             }
 
             IDbExpressionTranslator translator = this.DatabaseProvider.CreateDbExpressionTranslator();
-            DbCommandInfo dbCommandInfo = translator.Translate(insertExpression);
+            DbCommandInfo dbCommandInfo;
 
             if (keyPropertyDescriptor.IsAutoIncrement)
             {
+                insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+                {
+                    return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, content, exp);
+                }, insertExpression);
+
+                dbCommandInfo = translator.Translate(insertExpression);
+
                 /* 自增 id 不能用 output inserted.Id 输出，因为如果表设置了触发器的话会报错 */
                 dbCommandInfo.CommandText = string.Concat(dbCommandInfo.CommandText, ";", this.GetSelectLastInsertIdClause());
             }
             else if (keyPropertyDescriptor.HasSequence())
             {
                 insertExpression.Returns.Add(keyPropertyDescriptor.Column);
+                insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+                {
+                    return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, content, exp);
+                }, insertExpression);
+
+                dbCommandInfo = translator.Translate(insertExpression);
+            }
+            else
+            {
+                insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+                {
+                    return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, content, exp);
+                }, insertExpression);
+
+                dbCommandInfo = translator.Translate(insertExpression);
             }
 
             object ret = this.Session.ExecuteScalar(dbCommandInfo.CommandText, dbCommandInfo.GetParameters());
@@ -311,6 +358,11 @@ namespace Chloe.SqlServer
 
             Func<Task> insertAction = async () =>
             {
+                for (int i = 0; i < this.Context.Butler.DbContextInterceptors.Count; i++)
+                {
+                    this.Context.Butler.DbContextInterceptors[i].InsertRangeExecuting(this.Context, entities);
+                }
+
                 int countOfCurrentBatch = 0;
                 List<DbParam> dbParams = new List<DbParam>();
                 StringBuilder sqlBuilder = new StringBuilder();

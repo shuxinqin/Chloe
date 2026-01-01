@@ -11,17 +11,17 @@ namespace Chloe.SQLite
     {
         DatabaseProvider _databaseProvider;
 
-        public SQLiteContextProvider(Func<IDbConnection> dbConnectionFactory) : this(new DbConnectionFactory(dbConnectionFactory))
+        public SQLiteContextProvider(Func<IDbConnection> dbConnectionFactory, DbContext dbContext) : this(new DbConnectionFactory(dbConnectionFactory), dbContext)
         {
 
         }
 
-        public SQLiteContextProvider(IDbConnectionFactory dbConnectionFactory) : this(new SQLiteOptions() { DbConnectionFactory = dbConnectionFactory })
+        public SQLiteContextProvider(IDbConnectionFactory dbConnectionFactory, DbContext dbContext) : this(new SQLiteOptions() { DbConnectionFactory = dbConnectionFactory }, dbContext)
         {
 
         }
 
-        public SQLiteContextProvider(SQLiteOptions options) : base(options)
+        public SQLiteContextProvider(SQLiteOptions options, DbContext dbContext) : base(options, dbContext)
         {
             this._databaseProvider = new DatabaseProvider(this);
         }
@@ -103,6 +103,11 @@ namespace Chloe.SQLite
 
             Func<Task> insertAction = async () =>
             {
+                for (int i = 0; i < this.Context.Butler.DbContextInterceptors.Count; i++)
+                {
+                    this.Context.Butler.DbContextInterceptors[i].InsertRangeExecuting(this.Context, entities);
+                }
+
                 int countOfCurrentBatch = 0;
                 List<DbParam> dbParams = new List<DbParam>();
                 StringBuilder sqlBuilder = new StringBuilder();

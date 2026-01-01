@@ -40,7 +40,7 @@ namespace Chloe
         public ShardingOptions ShardingOptions { get; private set; } = new ShardingOptions();
 
         public IDbContextProviderFactory DbContextProviderFactory { get; private set; }
-        internal DbContextButler Butler { get; private set; }
+        public DbContextButler Butler { get; private set; }
         public override IDbSession Session { get { return this._session; } }
         public IDbContextProvider DefaultDbContextProvider { get { return this.Butler.GetDefaultDbContextProvider(); } }
         internal IDbContextProvider ShardingDbContextProvider { get { return this.Butler.GetShardingDbContextProvider(); } }
@@ -114,9 +114,14 @@ namespace Chloe
             }
 
             dbContext.Session.CommandTimeout = this.Session.CommandTimeout;
-            foreach (IDbCommandInterceptor interceptor in this.Butler.Interceptors)
+            foreach (IDbCommandInterceptor interceptor in this.Butler.DbCommandInterceptors)
             {
                 dbContext.Session.AddInterceptor(interceptor);
+            }
+
+            foreach (IDbContextInterceptor interceptor in this.Butler.DbContextInterceptors)
+            {
+                dbContext.AddInterceptor(interceptor);
             }
 
             return dbContext;
@@ -133,6 +138,11 @@ namespace Chloe
             PublicHelper.CheckNull(entity);
             var entityType = entity.GetType();
             this.GetDbContextProvider(entityType).TrackEntity(entity);
+        }
+
+        public override void AddInterceptor(IDbContextInterceptor interceptor)
+        {
+            this.Butler.AddDbContextInterceptor(interceptor);
         }
 
         public override void HasQueryFilter(Type entityType, LambdaExpression filter)

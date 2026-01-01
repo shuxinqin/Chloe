@@ -60,9 +60,9 @@ namespace Chloe.PostgreSQL
             this._options = options;
         }
 
-        public IDbContextProvider CreateDbContextProvider()
+        public IDbContextProvider CreateDbContextProvider(IDbContext dbContext)
         {
-            return new PostgreSQLContextProvider(this._options);
+            return new PostgreSQLContextProvider(this._options, dbContext as DbContext);
         }
     }
 }

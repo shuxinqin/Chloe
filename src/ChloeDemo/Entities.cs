@@ -29,6 +29,8 @@ namespace ChloeDemo
         [Column(IsPrimaryKey = true)]
         [AutoIncrement]
         public virtual int Id { get; set; }
+
+        public int TenantId { get; set; }
     }
 
     //如果使用 fluentmapping，就可以不用打特性了
@@ -70,7 +72,7 @@ namespace ChloeDemo
         public string NotMapped { get; set; }
     }
 
-    public class PersonProfile
+    public class PersonProfile : EntityBase
     {
         /* 1:1，注：Person 那边也要做相应的配置 */
         [Navigation("Id")]
@@ -89,7 +91,7 @@ namespace ChloeDemo
         public DateTime? BirthDay { get; set; }
     }
 
-    public class ProfileAnnex
+    public class ProfileAnnex : EntityBase
     {
         [Navigation(nameof(ProfileAnnex.ProfileId))]
         public PersonProfile Owner { get; set; }

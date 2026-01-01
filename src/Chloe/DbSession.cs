@@ -25,11 +25,11 @@ namespace Chloe
 
         public void AddInterceptor(IDbCommandInterceptor interceptor)
         {
-            this.DbContextButler.AddInterceptor(interceptor);
+            this.DbContextButler.AddDbCommandInterceptor(interceptor);
         }
         public void RemoveInterceptor(IDbCommandInterceptor interceptor)
         {
-            this.DbContextButler.RemoveInterceptor(interceptor);
+            this.DbContextButler.RemoveDbCommandInterceptor(interceptor);
         }
 
 

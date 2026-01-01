@@ -1,6 +1,6 @@
 ﻿namespace Chloe
 {
-    class DataSourceDbContextProviderPair
+    public class DataSourceDbContextProviderPair
     {
         public DataSourceDbContextProviderPair(IPhysicDataSource dataSource, IDbContextProvider dbContextProvider)
         {

@@ -17,17 +17,17 @@ namespace Chloe.Oracle
     {
         DatabaseProvider _databaseProvider;
 
-        public OracleContextProvider(Func<IDbConnection> dbConnectionFactory) : this(new DbConnectionFactory(dbConnectionFactory))
+        public OracleContextProvider(Func<IDbConnection> dbConnectionFactory, DbContext dbContext) : this(new DbConnectionFactory(dbConnectionFactory), dbContext)
         {
 
         }
 
-        public OracleContextProvider(IDbConnectionFactory dbConnectionFactory) : this(new OracleOptions() { DbConnectionFactory = dbConnectionFactory })
+        public OracleContextProvider(IDbConnectionFactory dbConnectionFactory, DbContext dbContext) : this(new OracleOptions() { DbConnectionFactory = dbConnectionFactory }, dbContext)
         {
 
         }
 
-        public OracleContextProvider(OracleOptions options) : base(options)
+        public OracleContextProvider(OracleOptions options, DbContext dbContext) : base(options, dbContext)
         {
             this._databaseProvider = new DatabaseProvider(this);
         }
@@ -141,6 +141,11 @@ namespace Chloe.Oracle
 
             insertExpression.Returns.AddRange(outputColumns.Select(a => a.Column));
 
+            insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, entity, exp);
+            }, insertExpression);
+
             DbCommandInfo dbCommandInfo = this.Translate(insertExpression);
             await this.ExecuteNonQuery(dbCommandInfo, @async);
 
@@ -236,6 +241,12 @@ namespace Chloe.Oracle
                 }
             }
 
+
+            insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, content, exp);
+            }, insertExpression);
+
             DbCommandInfo dbCommandInfo = this.Translate(insertExpression);
             await this.ExecuteNonQuery(dbCommandInfo, @async);
 
@@ -272,6 +283,11 @@ namespace Chloe.Oracle
 
             Func<Task> insertAction = async () =>
             {
+                for (int i = 0; i < this.Context.Butler.DbContextInterceptors.Count; i++)
+                {
+                    this.Context.Butler.DbContextInterceptors[i].InsertRangeExecuting(this.Context, entities);
+                }
+
                 int countOfCurrentBatch = 0;
                 List<DbParam> dbParams = new List<DbParam>();
                 StringBuilder sqlBuilder = new StringBuilder();

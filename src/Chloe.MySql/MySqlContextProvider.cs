@@ -1,15 +1,16 @@
-﻿using Chloe.Visitors;
-using Chloe.DbExpressions;
+﻿using Chloe.DbExpressions;
 using Chloe.Descriptors;
 using Chloe.Exceptions;
 using Chloe.Infrastructure;
+using Chloe.Infrastructure.Interception;
+using Chloe.Query;
 using Chloe.RDBMS;
 using Chloe.Threading.Tasks;
+using Chloe.Visitors;
 using System.Data;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Chloe.Query;
 
 namespace Chloe.MySql
 {
@@ -17,17 +18,17 @@ namespace Chloe.MySql
     {
         DatabaseProvider _databaseProvider;
 
-        public MySqlContextProvider(Func<IDbConnection> dbConnectionFactory) : this(new DbConnectionFactory(dbConnectionFactory))
+        public MySqlContextProvider(Func<IDbConnection> dbConnectionFactory, DbContext dbContext) : this(new DbConnectionFactory(dbConnectionFactory), dbContext)
         {
 
         }
 
-        public MySqlContextProvider(IDbConnectionFactory dbConnectionFactory) : this(new MySqlOptions() { DbConnectionFactory = dbConnectionFactory })
+        public MySqlContextProvider(IDbConnectionFactory dbConnectionFactory, DbContext dbContext) : this(new MySqlOptions() { DbConnectionFactory = dbConnectionFactory }, dbContext)
         {
 
         }
 
-        public MySqlContextProvider(MySqlOptions options) : base(options)
+        public MySqlContextProvider(MySqlOptions options, DbContext dbContext) : base(options, dbContext)
         {
             this._databaseProvider = new DatabaseProvider(this);
         }
@@ -106,6 +107,11 @@ namespace Chloe.MySql
 
             Func<Task> insertAction = async () =>
             {
+                for (int i = 0; i < this.Context.Butler.DbContextInterceptors.Count; i++)
+                {
+                    this.Context.Butler.DbContextInterceptors[i].InsertRangeExecuting(this.Context, entities);
+                }
+
                 int countOfCurrentBatch = 0;
                 List<DbParam> dbParams = new List<DbParam>();
                 StringBuilder sqlBuilder = new StringBuilder();
@@ -276,10 +282,17 @@ namespace Chloe.MySql
 
             updateExpression.Limits = limits;
 
-            if (updateExpression.UpdateColumns.Count == 0)
+            DbUpdateExpression execExp = updateExpression;
+
+            execExp = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.UpdateExecuting<TEntity>(this.Context, condition, content, exp);
+            }, execExp);
+
+            if (execExp.UpdateColumns.Count == 0)
                 return 0;
 
-            return await this.ExecuteNonQuery(updateExpression, @async);
+            return await this.ExecuteNonQuery(execExp, @async);
         }
 
         public virtual int Delete<TEntity>(Expression<Func<TEntity, bool>> condition, int limits)
@@ -312,7 +325,13 @@ namespace Chloe.MySql
             MySqlDbDeleteExpression e = new MySqlDbDeleteExpression(dbTable, conditionExp);
             e.Limits = limits;
 
-            return await this.ExecuteNonQuery(e, @async);
+            DbDeleteExpression execExp = e;
+            execExp = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
+            {
+                return dbContextInterceptor.DeleteExecuting<TEntity>(this.Context, condition, exp);
+            }, execExp);
+
+            return await this.ExecuteNonQuery(execExp, @async);
         }
     }
 }

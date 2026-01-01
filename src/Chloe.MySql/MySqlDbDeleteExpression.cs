@@ -2,7 +2,7 @@
 
 namespace Chloe.MySql
 {
-    class MySqlDbDeleteExpression : DbDeleteExpression
+    public class MySqlDbDeleteExpression : DbDeleteExpression
     {
         public MySqlDbDeleteExpression(DbTable table) : this(table, null)
         {

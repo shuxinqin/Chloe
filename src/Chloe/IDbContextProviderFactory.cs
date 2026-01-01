@@ -2,6 +2,6 @@
 {
     public interface IDbContextProviderFactory
     {
-        IDbContextProvider CreateDbContextProvider();
+        IDbContextProvider CreateDbContextProvider(IDbContext dbContext);
     }
 }

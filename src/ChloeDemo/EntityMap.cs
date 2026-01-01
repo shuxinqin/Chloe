@@ -16,6 +16,7 @@ namespace ChloeDemo
         public EntityMapBase()
         {
             this.Property(a => a.Id).IsAutoIncrement().IsPrimaryKey();
+            this.Property(a => a.TenantId).UpdateIgnore();
         }
     }
 

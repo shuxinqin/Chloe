@@ -14,14 +14,24 @@ namespace ChloeDemo
         {
             this.DbContext = this.CreateDbContext();
 
+            DbContextInterceptor dbContextInterceptor = new DbContextInterceptor(1);
+            this.DbContext.AddInterceptor(dbContextInterceptor);
+
             /* context filter，仅对当前 DbContext 对象有效 */
             this.DbContext.HasQueryFilter<Person>(a => a.Id > -100);
+
+            this.OnDbContextCreated();
         }
 
         /* WARNING: DbContext 是非线程安全的，不能设置为 static，并且用完务必要调用 Dispose 方法销毁对象 */
         public IDbContext DbContext { get; private set; }
 
         protected abstract IDbContext CreateDbContext();
+
+        protected virtual void OnDbContextCreated()
+        {
+
+        }
 
         public virtual void Dispose()
         {

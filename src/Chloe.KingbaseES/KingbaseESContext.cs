@@ -60,9 +60,9 @@ namespace Chloe.KingbaseES
             this._options = options;
         }
 
-        public IDbContextProvider CreateDbContextProvider()
+        public IDbContextProvider CreateDbContextProvider(IDbContext dbContext)
         {
-            return new KingbaseESContextProvider(this._options);
+            return new KingbaseESContextProvider(this._options, dbContext as DbContext);
         }
     }
 }

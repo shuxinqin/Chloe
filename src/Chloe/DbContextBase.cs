@@ -1,4 +1,5 @@
-﻿using Chloe.Sharding;
+﻿using Chloe.Infrastructure.Interception;
+using Chloe.Sharding;
 using Chloe.Threading.Tasks;
 using Chloe.Utility;
 using System.Data;
@@ -36,6 +37,11 @@ namespace Chloe
         }
 
         public virtual void TrackEntity(object entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void AddInterceptor(IDbContextInterceptor interceptor)
         {
             throw new NotImplementedException();
         }

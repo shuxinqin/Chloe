@@ -14,24 +14,24 @@
     }
 
 
-    internal interface ISharedObjectPool<T> : IDisposable
+    public interface ISharedObjectPool<T> : IDisposable
     {
         int Size { get; }
         Task<IPoolItem<T>> GetAsync();
         IPoolItem<T> Get();
     }
 
-    internal interface IPoolItem<T> : IDisposable
+    public interface IPoolItem<T> : IDisposable
     {
         public T Resource { get; }
     }
 
-    interface ISharedDbContextProviderPool : ISharedObjectPool<IDbContextProvider>
+    public interface ISharedDbContextProviderPool : ISharedObjectPool<IDbContextProvider>
     {
 
     }
 
-    class SharedObjectPool<T> : ISharedObjectPool<T>
+    public class SharedObjectPool<T> : ISharedObjectPool<T>
     {
         bool _disposed;
 
@@ -160,7 +160,7 @@
         }
     }
 
-    class SharedDbContextProviderPool : SharedObjectPool<IDbContextProvider>, ISharedDbContextProviderPool
+    public class SharedDbContextProviderPool : SharedObjectPool<IDbContextProvider>, ISharedDbContextProviderPool
     {
         public SharedDbContextProviderPool(int size, Func<IDbContextProvider> dbContextProviderFactory) : base(size, dbContextProviderFactory)
         {
