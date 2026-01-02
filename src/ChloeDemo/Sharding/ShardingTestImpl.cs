@@ -32,10 +32,10 @@ namespace ChloeDemo.Sharding
             return dbContext;
         }
 
-        public override IDbContextProvider CreateDbContextProvider(int year)
+        public override IDbContextProvider CreateDbContextProvider(DbContext dbContext, int year)
         {
             string connString = this.GetConnString(year);
-            var dbContextProvider = new MsSqlContextProvider(connString);
+            var dbContextProvider = new MsSqlContextProvider(connString, dbContext);
             return dbContextProvider;
         }
 
@@ -61,10 +61,10 @@ namespace ChloeDemo.Sharding
             return dbContext;
         }
 
-        public override IDbContextProvider CreateDbContextProvider(int year)
+        public override IDbContextProvider CreateDbContextProvider(DbContext dbContext, int year)
         {
             string connString = this.GetConnString(year);
-            var dbContextProvider = new MySqlContextProvider(new MySqlConnectionFactory(connString));
+            var dbContextProvider = new MySqlContextProvider(new MySqlConnectionFactory(connString), dbContext);
             return dbContextProvider;
         }
 
@@ -91,10 +91,10 @@ namespace ChloeDemo.Sharding
             return dbContext;
         }
 
-        public override IDbContextProvider CreateDbContextProvider(int year)
+        public override IDbContextProvider CreateDbContextProvider(DbContext dbContext, int year)
         {
             string connString = this.GetConnString(year);
-            var dbContextProvider = new OracleContextProvider(new OracleConnectionFactory(connString));
+            var dbContextProvider = new OracleContextProvider(new OracleConnectionFactory(connString), dbContext);
             return dbContextProvider;
         }
 
@@ -120,10 +120,10 @@ namespace ChloeDemo.Sharding
             return dbContext;
         }
 
-        public override IDbContextProvider CreateDbContextProvider(int year)
+        public override IDbContextProvider CreateDbContextProvider(DbContext dbContext, int year)
         {
             string connString = this.GetConnString(year);
-            var dbContextProvider = new PostgreSQLContextProvider(new PostgreSQLConnectionFactory(connString));
+            var dbContextProvider = new PostgreSQLContextProvider(new PostgreSQLConnectionFactory(connString), dbContext);
             return dbContextProvider;
         }
 
@@ -149,10 +149,10 @@ namespace ChloeDemo.Sharding
             return dbContext;
         }
 
-        public override IDbContextProvider CreateDbContextProvider(int year)
+        public override IDbContextProvider CreateDbContextProvider(DbContext dbContext, int year)
         {
             string connString = this.GetConnString(year);
-            var dbContextProvider = new DamengContextProvider(new DamengConnectionFactory(connString));
+            var dbContextProvider = new DamengContextProvider(new DamengConnectionFactory(connString),dbContext);
             return dbContextProvider;
         }
 
@@ -178,10 +178,10 @@ namespace ChloeDemo.Sharding
             return dbContext;
         }
 
-        public override IDbContextProvider CreateDbContextProvider(int year)
+        public override IDbContextProvider CreateDbContextProvider(DbContext dbContext, int year)
         {
             string connString = this.GetConnString(year);
-            var dbContextProvider = new KingbaseESContextProvider(new KingbaseESConnectionFactory(connString));
+            var dbContextProvider = new KingbaseESContextProvider(new KingbaseESConnectionFactory(connString),dbContext);
             return dbContextProvider;
         }
 

@@ -18,10 +18,10 @@ namespace ChloeDemo.Sharding
             this._year = year;
         }
 
-        public IDbContextProvider CreateDbContextProvider()
+        public IDbContextProvider CreateDbContextProvider(IDbContext dbContext)
         {
             //具体实现在 ShardingTestImpl.cs 文件里
-            return this._shardingTest.CreateDbContextProvider(this._year);
+            return this._shardingTest.CreateDbContextProvider(dbContext as DbContext, this._year);
         }
     }
 }

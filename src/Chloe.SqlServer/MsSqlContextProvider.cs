@@ -13,7 +13,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Chloe.RDBMS;
 
-#if NET6 || NET8
+#if NET6 || NET8 || NET10
 using Microsoft.Data.SqlClient;
 #else
 using System.Data.SqlClient;

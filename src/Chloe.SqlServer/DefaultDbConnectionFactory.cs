@@ -1,7 +1,7 @@
 ﻿using Chloe.Infrastructure;
 using System.Data;
 
-#if NET6 || NET8
+#if NET6 || NET8 || NET10
 using Microsoft.Data.SqlClient;
 #else
 using System.Data.SqlClient;

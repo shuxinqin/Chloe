@@ -2,7 +2,7 @@
 <package >
 	<metadata>
 		<id>Chloe.PostgreSQL</id>
-		<version>5.54.0</version>
+		<version>5.55.0</version>
 		<title>Chloe.PostgreSQL</title>
 		<authors>Shuxin Qin</authors>
 		<owners>Shuxin Qin</owners>
@@ -13,24 +13,28 @@
 		<description>
 			A lightweight and high-performance Object/Relational Mapping(ORM) library.
 		</description>
-		<copyright>Copyright 2016-2025</copyright>
+		<copyright>Copyright 2016-2026</copyright>
 		<tags>Chloe,ORM,Data,PostgreSQL,.NET Core</tags>
 
 		<dependencies>
 			<group targetFramework="net46">
-				<dependency id="Chloe" version="5.54.0" />
+				<dependency id="Chloe" version="5.55.0" />
 			</group>
 
 			<group targetFramework="netstandard2.0">
-				<dependency id="Chloe" version="5.54.0" />
+				<dependency id="Chloe" version="5.55.0" />
 			</group>
 
 			<group targetFramework="net6.0">
-				<dependency id="Chloe" version="5.54.0" />
+				<dependency id="Chloe" version="5.55.0" />
 			</group>
 
 			<group targetFramework="net8.0">
-				<dependency id="Chloe" version="5.54.0" />
+				<dependency id="Chloe" version="5.55.0" />
+			</group>
+
+			<group targetFramework="net10.0">
+				<dependency id="Chloe" version="5.55.0" />
 			</group>
 		</dependencies>
 
@@ -48,5 +52,8 @@
 
 		<file src="..\Chloe.PostgreSQL\bin\Release\net8.0\Chloe.PostgreSQL.dll" target="lib\net8.0" />
 		<file src="..\Chloe.PostgreSQL\bin\Release\net8.0\Chloe.PostgreSQL.xml" target="lib\net8.0" />
+
+		<file src="..\Chloe.PostgreSQL\bin\Release\net10.0\Chloe.PostgreSQL.dll" target="lib\net10.0" />
+		<file src="..\Chloe.PostgreSQL\bin\Release\net10.0\Chloe.PostgreSQL.xml" target="lib\net10.0" />
 	</files>
 </package>

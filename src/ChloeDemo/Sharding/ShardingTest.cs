@@ -54,9 +54,10 @@ namespace ChloeDemo.Sharding
         /// <summary>
         /// 创建数据源
         /// </summary>
+        /// <param name="dbContext"></param>
         /// <param name="year"></param>
         /// <returns></returns>
-        public abstract IDbContextProvider CreateDbContextProvider(int year);
+        public abstract IDbContextProvider CreateDbContextProvider(DbContext dbContext, int year);
 
         /// <summary>
         /// 根据表名生成分表

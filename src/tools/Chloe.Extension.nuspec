@@ -2,7 +2,7 @@
 <package >
 	<metadata>
 		<id>Chloe.Extension</id>
-		<version>5.54.0</version>
+		<version>5.55.0</version>
 		<title>Chloe.Extension</title>
 		<authors>Shuxin Qin</authors>
 		<owners>Shuxin Qin</owners>
@@ -11,24 +11,28 @@
 		<iconUrl>http://images.cnblogs.com/cnblogs_com/so9527/860154/o_ORMicon.png</iconUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>Extension for Chloe.ORM</description>
-		<copyright>Copyright 2016-2025</copyright>
+		<copyright>Copyright 2016-2026</copyright>
 		<tags>Chloe,ORM,Data</tags>
 
 		<dependencies>
 			<group targetFramework="net46">
-				<dependency id="Chloe" version="5.54.0" />
+				<dependency id="Chloe" version="5.55.0" />
 			</group>
 
 			<group targetFramework="netstandard2.0">
-				<dependency id="Chloe" version="5.54.0" />
+				<dependency id="Chloe" version="5.55.0" />
 			</group>
 
 			<group targetFramework="net6.0">
-				<dependency id="Chloe" version="5.54.0" />
+				<dependency id="Chloe" version="5.55.0" />
 			</group>
 
 			<group targetFramework="net8.0">
-				<dependency id="Chloe" version="5.54.0" />
+				<dependency id="Chloe" version="5.55.0" />
+			</group>
+
+			<group targetFramework="net10.0">
+				<dependency id="Chloe" version="5.55.0" />
 			</group>
 		</dependencies>
 
@@ -47,5 +51,8 @@
 
 		<file src="..\Chloe.Extension\bin\Release\net8.0\Chloe.Extension.dll" target="lib\net8.0"></file>
 		<file src="..\Chloe.Extension\bin\Release\net8.0\Chloe.Extension.xml" target="lib\net8.0"></file>
+
+		<file src="..\Chloe.Extension\bin\Release\net10.0\Chloe.Extension.dll" target="lib\net10.0"></file>
+		<file src="..\Chloe.Extension\bin\Release\net10.0\Chloe.Extension.xml" target="lib\net10.0"></file>
 	</files>
 </package>

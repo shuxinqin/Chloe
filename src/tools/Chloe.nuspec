@@ -2,7 +2,7 @@
 <package >
 	<metadata>
 		<id>Chloe</id>
-		<version>5.54.0</version>
+		<version>5.55.0</version>
 		<title>Chloe</title>
 		<authors>Shuxin Qin</authors>
 		<owners>Shuxin Qin</owners>
@@ -13,7 +13,7 @@
 		<description>
 			A lightweight and high-performance Object/Relational Mapping(ORM) library.
 		</description>
-		<copyright>Copyright 2016-2025</copyright>
+		<copyright>Copyright 2016-2026</copyright>
 		<tags>Chloe,ORM,Data,.NET Core</tags>
 
 		<dependencies>
@@ -35,6 +35,10 @@
 			<group targetFramework="net8.0">
 				<dependency id="System.Linq.Async" version="6.0.1" />
 			</group>
+
+			<group targetFramework="net10.0">
+
+			</group>
 		</dependencies>
 
 	</metadata>
@@ -51,5 +55,8 @@
 
 		<file src="..\Chloe\bin\Release\net8.0\Chloe.dll" target="lib\net8.0"></file>
 		<file src="..\Chloe\bin\Release\net8.0\Chloe.xml" target="lib\net8.0"></file>
+
+		<file src="..\Chloe\bin\Release\net10.0\Chloe.dll" target="lib\net10.0"></file>
+		<file src="..\Chloe\bin\Release\net10.0\Chloe.xml" target="lib\net10.0"></file>
 	</files>
 </package>

@@ -4,15 +4,16 @@
 		<!--<TargetFramework>netstandard2.0</TargetFramework>-->
 		<!--<TargetFramework>net45</TargetFramework>-->
 		<!--<TargetFramework>net6.0</TargetFramework>-->
-		<TargetFrameworks>net8.0;net6.0;netstandard2.0;net46</TargetFrameworks>
+		<!--<TargetFramework>net10.0</TargetFramework>-->
+		<TargetFrameworks>net10.0;net8.0;net6.0;netstandard2.0;net46</TargetFrameworks>
 		<LangVersion>10.0</LangVersion>
 
-		<Version>5.54.0</Version>
+		<Version>5.55.0</Version>
 		<Description>A lightweight and high-performance Object/Relational Mapping(ORM) library.</Description>
 		<PackageId>Chloe</PackageId>
 		<Product>Chloe.ORM</Product>
 		<Authors>Shuxin Qin</Authors>
-		<Copyright>Copyright 2016-2025.</Copyright>
+		<Copyright>Copyright 2016-2026.</Copyright>
 		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
 	</PropertyGroup>
 
@@ -32,6 +33,9 @@
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
 		<DefineConstants>NETCORE;NET8</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<DefineConstants>NETCORE;NET10</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net46'">
@@ -53,4 +57,7 @@
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+
+	</ItemGroup>
 </Project>
