@@ -135,7 +135,17 @@ namespace Chloe.Data
             catch (Exception ex)
             {
                 dbCommandInterceptionContext.Exception = ex;
-                this.OnReaderExecuted(cmd, dbCommandInterceptionContext);
+
+                try
+                {
+                    this.OnReaderExecuted(cmd, dbCommandInterceptionContext);
+                }
+                finally
+                {
+                    this.Complete();
+                    if (cmd != null)
+                        cmd.Dispose();
+                }
 
                 throw WrapException(ex);
             }
