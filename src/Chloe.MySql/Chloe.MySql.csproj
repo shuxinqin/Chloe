@@ -4,7 +4,7 @@
 		<TargetFrameworks>net10.0;net8.0;net6.0;netstandard2.0;net46</TargetFrameworks>
 		<LangVersion>10.0</LangVersion>
 
-		<Version>5.55.0</Version>
+		<Version>5.56.0</Version>
 		<Description>A lightweight and high-performance Object/Relational Mapping(ORM) library.</Description>
 		<PackageId>Chloe.MySql</PackageId>
 		<Product>Chloe.ORM</Product>
