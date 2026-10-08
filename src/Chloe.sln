@@ -38,9 +38,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{808B845C
 		tools\Chloe.Oracle.nuspec = tools\Chloe.Oracle.nuspec
 		tools\Chloe.PostgreSQL.nuspec = tools\Chloe.PostgreSQL.nuspec
 		tools\Chloe.SQLite.nuspec = tools\Chloe.SQLite.nuspec
+		tools\Chloe.SonnetDB.nuspec = tools\Chloe.SonnetDB.nuspec
 		tools\Chloe.SqlServer.nuspec = tools\Chloe.SqlServer.nuspec
 		tools\Pack-Chloe-All.bat = tools\Pack-Chloe-All.bat
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chloe.SonnetDB", "Chloe.SonnetDB\Chloe.SonnetDB.csproj", "{5E38273D-5578-4D3B-BCE9-077AEDEB3741}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chloe.SonnetDB.Tests", "..\tests\Chloe.SonnetDB.Tests\Chloe.SonnetDB.Tests.csproj", "{AEB3D9DD-B4A5-4B24-AE58-F0BFC4D31A7A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,6 +93,14 @@ Global
 		{54DC63C1-F52E-4422-A196-4EA13F509F6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54DC63C1-F52E-4422-A196-4EA13F509F6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54DC63C1-F52E-4422-A196-4EA13F509F6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E38273D-5578-4D3B-BCE9-077AEDEB3741}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E38273D-5578-4D3B-BCE9-077AEDEB3741}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E38273D-5578-4D3B-BCE9-077AEDEB3741}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E38273D-5578-4D3B-BCE9-077AEDEB3741}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEB3D9DD-B4A5-4B24-AE58-F0BFC4D31A7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEB3D9DD-B4A5-4B24-AE58-F0BFC4D31A7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEB3D9DD-B4A5-4B24-AE58-F0BFC4D31A7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEB3D9DD-B4A5-4B24-AE58-F0BFC4D31A7A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
