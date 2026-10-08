@@ -2,7 +2,7 @@
 
 基线：Chloe `5.56.0`、SonnetDB 正式 NuGet 包 `4.0.0`，核查日期为 2026-10-09。范围是 Chloe 已提供的关系型 ORM 能力；不为 SonnetDB 的时序、向量、文档等额外模型扩展 Chloe 接口。
 
-主跟踪：[Chloe #433](https://github.com/shuxinqin/Chloe/issues/433)。数据库缺口解决前保持草稿 PR，适配包尚未发布。
+主跟踪：[Chloe #433](https://github.com/shuxinqin/Chloe/issues/433)；适配 PR：[Chloe #435](https://github.com/shuxinqin/Chloe/pull/435)。数据库缺口解决前保持草稿 PR，适配包尚未发布。
 
 ## 使用
 
