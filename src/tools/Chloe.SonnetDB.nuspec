@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<package >
+	<metadata>
+		<id>Chloe.SonnetDB</id>
+		<version>5.56.0</version>
+		<title>Chloe.SonnetDB</title>
+		<authors>Shuxin Qin</authors>
+		<owners>Shuxin Qin</owners>
+		<licenseUrl>https://github.com/shuxinqin/Chloe/blob/master/LICENSE</licenseUrl>
+		<projectUrl>https://github.com/shuxinqin/Chloe</projectUrl>
+		<iconUrl>http://images.cnblogs.com/cnblogs_com/so9527/860154/o_ORMicon.png</iconUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>
+			A lightweight and high-performance Object/Relational Mapping(ORM) library.
+		</description>
+		<copyright>Copyright 2016-2026</copyright>
+		<tags>Chloe,ORM,Data,SonnetDB,.NET Core</tags>
+
+		<dependencies>
+			<group targetFramework="net46">
+				<dependency id="Chloe" version="5.56.0" />
+			</group>
+
+			<group targetFramework="netstandard2.0">
+				<dependency id="Chloe" version="5.56.0" />
+			</group>
+
+			<group targetFramework="net6.0">
+				<dependency id="Chloe" version="5.56.0" />
+			</group>
+
+			<group targetFramework="net8.0">
+				<dependency id="Chloe" version="5.56.0" />
+			</group>
+
+			<group targetFramework="net10.0">
+				<dependency id="Chloe" version="5.56.0" />
+			</group>
+		</dependencies>
+
+	</metadata>
+
+	<files>
+		<file src="..\Chloe.SonnetDB\bin\Release\net46\Chloe.SonnetDB.dll" target="lib\net46" />
+		<file src="..\Chloe.SonnetDB\bin\Release\net46\Chloe.SonnetDB.xml" target="lib\net46" />
+
+		<file src="..\Chloe.SonnetDB\bin\Release\netstandard2.0\Chloe.SonnetDB.dll" target="lib\netstandard2.0"></file>
+		<file src="..\Chloe.SonnetDB\bin\Release\netstandard2.0\Chloe.SonnetDB.xml" target="lib\netstandard2.0"></file>
+
+		<file src="..\Chloe.SonnetDB\bin\Release\net6.0\Chloe.SonnetDB.dll" target="lib\net6.0" />
+		<file src="..\Chloe.SonnetDB\bin\Release\net6.0\Chloe.SonnetDB.xml" target="lib\net6.0" />
+
+		<file src="..\Chloe.SonnetDB\bin\Release\net8.0\Chloe.SonnetDB.dll" target="lib\net8.0" />
+		<file src="..\Chloe.SonnetDB\bin\Release\net8.0\Chloe.SonnetDB.xml" target="lib\net8.0" />
+
+		<file src="..\Chloe.SonnetDB\bin\Release\net10.0\Chloe.SonnetDB.dll" target="lib\net10.0" />
+		<file src="..\Chloe.SonnetDB\bin\Release\net10.0\Chloe.SonnetDB.xml" target="lib\net10.0" />
+	</files>
+</package>

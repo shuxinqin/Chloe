@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net10.0;net8.0;net6.0;netstandard2.0;net46</TargetFrameworks>
+		<LangVersion>10.0</LangVersion>
+
+		<Version>5.56.0</Version>
+		<Description>A lightweight and high-performance Object/Relational Mapping(ORM) library.</Description>
+		<PackageId>Chloe.SonnetDB</PackageId>
+		<Product>Chloe.ORM</Product>
+		<Authors>Shuxin Qin</Authors>
+		<Copyright>Copyright 2016-2026.</Copyright>
+		<GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net46'">
+		<DefineConstants>NETFX;NET46</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<DefineConstants>NETCORE</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net6.0'">
+		<DefineConstants>NETCORE;NET6</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<DefineConstants>NETCORE;NET8</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<DefineConstants>NETCORE;NET10</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Chloe\Chloe.csproj" />
+	</ItemGroup>
+</Project>
