@@ -13,7 +13,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="SonnetDB" Version="4.0.0" />
+    <PackageReference Include="SonnetDB" Version="5.0.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
   </ItemGroup>
   <ItemGroup>

@@ -8,9 +8,9 @@ namespace Chloe.SonnetDB.PropertyHandlers
     {
         public override void Process(DbMemberAccessExpression exp, SqlGeneratorBase generator)
         {
-            generator.SqlBuilder.Append("TO_DATETIME(DATE_ONLY(");
+            generator.SqlBuilder.Append("DATE_ONLY(");
             exp.Expression.Accept(generator);
-            generator.SqlBuilder.Append("))");
+            generator.SqlBuilder.Append(")");
         }
     }
 }

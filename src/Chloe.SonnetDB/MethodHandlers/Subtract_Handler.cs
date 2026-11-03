@@ -8,7 +8,11 @@ namespace Chloe.SonnetDB.MethodHandlers
     {
         public override void Process(DbMethodCallExpression exp, SqlGeneratorBase generator)
         {
-            throw new NotSupportedException("SonnetDB does not support CLR TimeSpan duration results from DateTime.Subtract(). See https://github.com/IoTSharp/SonnetDB/issues/252.");
+            generator.SqlBuilder.Append("(");
+            exp.Object.Accept(generator);
+            generator.SqlBuilder.Append(" - ");
+            exp.Arguments[0].Accept(generator);
+            generator.SqlBuilder.Append(")");
         }
     }
 }

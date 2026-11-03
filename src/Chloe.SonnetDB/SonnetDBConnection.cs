@@ -11,8 +11,8 @@ namespace Chloe.SonnetDB
 
         public override IDbTransaction BeginTransaction(IsolationLevel isolationLevel)
         {
-            if (isolationLevel != IsolationLevel.ReadCommitted && isolationLevel != IsolationLevel.Unspecified)
-                throw new NotSupportedException("SonnetDB currently supports ReadCommitted transactions only. See https://github.com/IoTSharp/SonnetDB/issues/225.");
+            if (isolationLevel != IsolationLevel.ReadCommitted && isolationLevel != IsolationLevel.Serializable && isolationLevel != IsolationLevel.Unspecified)
+                throw new NotSupportedException("SonnetDB supports ReadCommitted and Serializable transactions; other isolation levels require an explicit supported mapping. See https://github.com/IoTSharp/SonnetDB/issues/225.");
 
             return base.BeginTransaction(isolationLevel);
         }

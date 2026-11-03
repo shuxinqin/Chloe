@@ -32,7 +32,7 @@ using var context = new SonnetDBContext(
     () => new SndbConnection("Data Source=./chloe-data"));
 ```
 
-驱动使用 `SonnetDB` NuGet 包（程序集与命名空间为 `SonnetDB.Data`）。正式版 `4.0.0` 的驱动要求 .NET 10；适配程序集本身保持与现有 provider 相同的目标框架。发布状态、验收命令和数据库缺口见 [SonnetDB 能力清单](docs/sonnetdb-support.md)。
+驱动使用 `SonnetDB` NuGet 包（程序集与命名空间为 `SonnetDB.Data`）。当前适配面向 `5.0.0`，实际驱动要求 .NET 10；适配程序集本身保持与现有 provider 相同的目标框架。5.0 候选验证、上游合入、正式 NuGet 发布与公开包消费者验收分别记录，当前候选通过不等于已完成公开发布。能力与边界见 [SonnetDB 能力清单](docs/sonnetdb-support.md)，旧 4.0 验证保留在[测试说明](tests/Chloe.SonnetDB.Tests/README.md)的历史章节。
 
 # Usage
 * **Entity**

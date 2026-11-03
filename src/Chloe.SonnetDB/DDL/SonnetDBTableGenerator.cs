@@ -16,33 +16,16 @@ namespace Chloe.SonnetDB.DDL
 
         public override List<string> GenCreateTableScript(TypeDescriptor typeDescriptor, string tableName, TableCreateMode createMode = TableCreateMode.CreateIfNotExists)
         {
-            foreach (var property in typeDescriptor.PrimitivePropertyDescriptors)
-            {
-                if (property.Column.Precision != null || property.Column.Scale != null)
-                    throw new NotSupportedException("SonnetDB does not enforce declared DECIMAL precision and scale constraints. See https://github.com/IoTSharp/SonnetDB/issues/264.");
-
-                if (property.TryGetAnnotation(typeof(DataTypeAttribute), out var annotation) && annotation is DataTypeAttribute dataType)
-                {
-                    int leftParenthesis = dataType.Name?.IndexOf('(') ?? -1;
-                    if (leftParenthesis >= 0)
-                    {
-                        string typeName = dataType.Name.Substring(0, leftParenthesis).Trim();
-                        if (typeName.Equals("DECIMAL", StringComparison.OrdinalIgnoreCase) || typeName.Equals("NUMERIC", StringComparison.OrdinalIgnoreCase))
-                            throw new NotSupportedException("SonnetDB does not enforce declared DECIMAL precision and scale constraints. See https://github.com/IoTSharp/SonnetDB/issues/264.");
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(typeDescriptor.Table.Schema))
-                throw new NotSupportedException("SonnetDB does not support database schemas. See https://github.com/IoTSharp/SonnetDB/issues/232.");
-            if (typeDescriptor.PrimitivePropertyDescriptors.Any(a => a.HasSequence()))
-                throw new NotSupportedException("SonnetDB does not support database sequences. See https://github.com/IoTSharp/SonnetDB/issues/231.");
-            if (typeDescriptor.PrimaryKeys.Count == 0)
-                throw new NotSupportedException("SonnetDB cannot write relational tables without a primary key. See https://github.com/IoTSharp/SonnetDB/issues/253.");
 
             tableName = string.IsNullOrEmpty(tableName) ? typeDescriptor.Table.Name : tableName;
-            string quotedTableName = Utils.QuoteName(tableName);
+            string quotedTableName = Utils.QuoteTable(tableName, typeDescriptor.Table.Schema);
             List<string> scripts = new List<string>();
+            foreach (var property in typeDescriptor.PrimitivePropertyDescriptors.Where(a => a.HasSequence()))
+            {
+                if (!string.IsNullOrEmpty(property.Definition.SequenceSchema))
+                    throw new NotSupportedException("SonnetDB sequences have one database-wide namespace.");
+                scripts.Add("CREATE SEQUENCE IF NOT EXISTS " + Utils.QuoteName(property.Definition.SequenceName));
+            }
             if (createMode == TableCreateMode.CreateNew)
                 scripts.Add($"DROP TABLE IF EXISTS {quotedTableName};");
 
@@ -75,6 +58,14 @@ namespace Chloe.SonnetDB.DDL
             }
             sql.AppendLine().Append(");");
             scripts.Add(sql.ToString());
+            var commentDoc = GetAssemblyCommentDoc(typeDescriptor.Definition.Type.Assembly);
+            foreach (var property in typeDescriptor.PrimitivePropertyDescriptors)
+            {
+                string comment = FindComment(property, commentDoc);
+                if (!string.IsNullOrEmpty(comment))
+                    scripts.Add("COMMENT ON COLUMN " + quotedTableName + "." + Utils.QuoteName(property.Column.Name)
+                        + " IS '" + comment.Replace("'", "''") + "'");
+            }
             return scripts;
         }
 
@@ -82,10 +73,39 @@ namespace Chloe.SonnetDB.DDL
         {
             Utils.EnsureSupportedMappingType(property.PropertyType);
             if (property.PropertyType.GetUnderlyingType() == typeof(string) && property.Column.Size != null)
-                throw new NotSupportedException("SonnetDB STRING columns do not enforce a maximum length. See https://github.com/IoTSharp/SonnetDB/issues/240.");
+            {
+                if (property.Column.Size <= 0) throw new NotSupportedException("SonnetDB STRING length must be positive.");
+                return "STRING(" + property.Column.Size.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) + ")";
+            }
+
+            if (property.Column.Precision != null || property.Column.Scale != null)
+            {
+                if (property.PropertyType.GetUnderlyingType() != typeof(decimal))
+                    throw new NotSupportedException("SonnetDB Precision/Scale metadata is supported only for Decimal properties.");
+                if (property.Column.Precision == null || property.Column.Scale == null)
+                    throw new NotSupportedException("Specify both Precision and Scale for an explicit SonnetDB DECIMAL declaration.");
+                if (property.TryGetAnnotation(typeof(DataTypeAttribute), out _))
+                    throw new NotSupportedException("Choose either Precision/Scale or a custom DataType declaration, not both.");
+                int precision = property.Column.Precision.Value;
+                int scale = property.Column.Scale.Value;
+                if (precision < 1 || precision > 38 || scale < 0 || scale > precision || scale > 28)
+                    throw new NotSupportedException("SonnetDB Decimal metadata requires precision 1..38 and scale 0..min(precision,28).");
+                return string.Format(System.Globalization.CultureInfo.InvariantCulture, "DECIMAL({0},{1})", precision, scale);
+            }
 
             if (property.TryGetAnnotation(typeof(DataTypeAttribute), out var annotation))
-                return ((DataTypeAttribute)annotation).Name;
+            {
+                string customType = ((DataTypeAttribute)annotation).Name;
+                int leftParenthesis = customType?.IndexOf('(') ?? -1;
+                if (leftParenthesis >= 0)
+                {
+                    string typeName = customType.Substring(0, leftParenthesis).Trim();
+                    if ((typeName.Equals("DECIMAL", StringComparison.OrdinalIgnoreCase) || typeName.Equals("NUMERIC", StringComparison.OrdinalIgnoreCase))
+                        && property.PropertyType.GetUnderlyingType() != typeof(decimal))
+                        throw new NotSupportedException("An explicit DECIMAL/NUMERIC declaration requires a Decimal property.");
+                }
+                return customType;
+            }
 
             Type type = property.PropertyType.GetUnderlyingType();
             if (type.IsEnum)
@@ -102,8 +122,12 @@ namespace Chloe.SonnetDB.DDL
                 return "DECIMAL";
             if (type == typeof(bool))
                 return "BOOL";
+            if (type == typeof(DateTimeOffset))
+                return "DATETIMEOFFSET";
             if (type == typeof(DateTime))
-                return "DATETIME";
+                return "DATETIME2";
+            if (type == typeof(TimeSpan))
+                return "DURATION";
             if (type == typeof(byte[]))
                 return "BLOB";
 

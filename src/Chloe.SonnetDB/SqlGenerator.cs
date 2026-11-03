@@ -10,6 +10,7 @@ namespace Chloe.SonnetDB
     partial class SqlGenerator : SqlGeneratorBase
     {
         DbParamCollection _parameters = new DbParamCollection();
+        DbTableSegment _lockingTable;
 
         public static readonly Dictionary<string, IPropertyHandler[]> PropertyHandlerDic = InitPropertyHandlers();
         public static readonly Dictionary<string, IMethodHandler[]> MethodHandlerDic = InitMethodHandlers();
@@ -34,7 +35,9 @@ namespace Chloe.SonnetDB
             castTypeMap.Add(typeof(double), "FLOAT");
             castTypeMap.Add(typeof(decimal), "DECIMAL");
             castTypeMap.Add(typeof(bool), "BOOL");
-            castTypeMap.Add(typeof(DateTime), "DATETIME");
+            castTypeMap.Add(typeof(DateTime), "DATETIME2");
+            castTypeMap.Add(typeof(DateTimeOffset), "DATETIMEOFFSET");
+            castTypeMap.Add(typeof(TimeSpan), "DURATION");
             castTypeMap.Add(typeof(Guid), "STRING");
             CastTypeMap = PublicHelper.Clone(castTypeMap);
 
@@ -68,10 +71,7 @@ namespace Chloe.SonnetDB
 
         protected override void AppendTable(DbTable table)
         {
-            if (!string.IsNullOrEmpty(table.Schema))
-                throw new NotSupportedException("SonnetDB does not support database schemas. See https://github.com/IoTSharp/SonnetDB/issues/232.");
-
-            this.QuoteName(table.Name);
+            this.SqlBuilder.Append(Utils.QuoteTable(table.Name, table.Schema));
         }
 
         public override DbExpression VisitColumnAccess(DbColumnAccessExpression exp)
@@ -82,8 +82,11 @@ namespace Chloe.SonnetDB
 
         protected override void AppendTableSegment(DbTableSegment seg)
         {
-            if (seg.Lock != LockType.Unspecified)
-                throw new NotSupportedException("SonnetDB does not support query lock hints. See https://github.com/IoTSharp/SonnetDB/issues/233.");
+            if (seg.Lock == LockType.NoLock)
+                throw new NotSupportedException("SonnetDB does not support dirty reads or LockType.NoLock; use an ordinary query explicitly. See https://github.com/IoTSharp/SonnetDB/issues/233.");
+            if (seg.Lock != LockType.Unspecified
+                && (seg.Lock != LockType.UpdLock || !ReferenceEquals(seg, this._lockingTable)))
+                throw new NotSupportedException("SonnetDB supports UpdLock only on the direct source of a single-table query. See https://github.com/IoTSharp/SonnetDB/issues/233.");
 
             base.AppendTableSegment(seg);
         }
@@ -113,7 +116,10 @@ namespace Chloe.SonnetDB
                 foreach (var column in exp.InsertColumns)
                 {
                     this.SqlBuilder.Append(separator);
+                    bool preciseDate = column.Column.Type.GetUnderlyingType() == typeof(DateTime);
+                    if (preciseDate) this.SqlBuilder.Append("CAST(");
                     column.Value.Accept(this);
+                    if (preciseDate) this.SqlBuilder.Append(" AS DATETIME2)");
                     separator = ",";
                 }
             }
@@ -136,14 +142,28 @@ namespace Chloe.SonnetDB
         public override DbExpression VisitBitAnd(DbBitAndExpression exp)
         {
             if (IsUInt64Expression(exp.Left) || IsUInt64Expression(exp.Right))
-                throw new NotSupportedException("SonnetDB does not support UInt64 bitwise operations on its DECIMAL representation. See https://github.com/IoTSharp/SonnetDB/issues/259.");
+            {
+                this.SqlBuilder.Append("bit_and_uint64(");
+                exp.Left.Accept(this);
+                this.SqlBuilder.Append(",");
+                exp.Right.Accept(this);
+                this.SqlBuilder.Append(")");
+                return exp;
+            }
             return base.VisitBitAnd(exp);
         }
 
         public override DbExpression VisitBitOr(DbBitOrExpression exp)
         {
             if (IsUInt64Expression(exp.Left) || IsUInt64Expression(exp.Right))
-                throw new NotSupportedException("SonnetDB does not support UInt64 bitwise operations on its DECIMAL representation. See https://github.com/IoTSharp/SonnetDB/issues/259.");
+            {
+                this.SqlBuilder.Append("bit_or_uint64(");
+                exp.Left.Accept(this);
+                this.SqlBuilder.Append(",");
+                exp.Right.Accept(this);
+                this.SqlBuilder.Append(")");
+                return exp;
+            }
             return base.VisitBitOr(exp);
         }
 
@@ -195,8 +215,24 @@ namespace Chloe.SonnetDB
 
         public override DbExpression VisitSqlQuery(DbSqlQueryExpression exp)
         {
-            this.BuildGeneralSql(exp);
-            return exp;
+            DbTableSegment previous = this._lockingTable;
+            DbTableSegment source = exp.Table.Table;
+            bool locked = source.Lock == LockType.UpdLock;
+            if (locked && (source.Body.NodeType != DbExpressionType.Table
+                || exp.Table.JoinTables.Count != 0 || exp.IsDistinct || exp.GroupSegments.Count != 0))
+                throw new NotSupportedException("SonnetDB UpdLock requires a direct single-table query without DISTINCT or grouping.");
+            this._lockingTable = locked ? source : null;
+            try
+            {
+                this.BuildGeneralSql(exp);
+                if (locked)
+                    this.SqlBuilder.Append(" FOR UPDATE");
+                return exp;
+            }
+            finally
+            {
+                this._lockingTable = previous;
+            }
         }
 
         public override DbExpression VisitCoalesce(DbCoalesceExpression exp)
@@ -222,9 +258,6 @@ namespace Chloe.SonnetDB
 
             exp = (DbConvertExpression)stripedExp;
             Utils.EnsureSupportedMappingType(exp.Type);
-
-            if (exp.Operand is DbAggregateExpression || (exp.Operand is DbMethodCallExpression aggregateMethod && aggregateMethod.Method.DeclaringType == PublicConstants.TypeOfSql && (aggregateMethod.Method.Name == "Sum" || aggregateMethod.Method.Name == "Average" || aggregateMethod.Method.Name == "Max" || aggregateMethod.Method.Name == "Min" || aggregateMethod.Method.Name == "Count" || aggregateMethod.Method.Name == "LongCount")))
-                throw new NotSupportedException("SonnetDB does not support CAST around an aggregate expression. See https://github.com/IoTSharp/SonnetDB/issues/254.");
 
             Type sourceType = exp.Operand.Type.GetUnderlyingType();
             if (exp.Type.GetUnderlyingType() == typeof(ulong) && (sourceType == typeof(float) || sourceType == typeof(double) || sourceType == typeof(decimal)))
@@ -319,6 +352,10 @@ namespace Chloe.SonnetDB
             Type paramType = exp.Type.GetUnderlyingType();
             Utils.EnsureSupportedMappingType(paramType);
             DbType? dbType = exp.DbType;
+            if (paramType == typeof(DateTime) && (dbType == null || dbType == DbType.DateTime)) dbType = DbType.DateTime2;
+            // DURATION preserves the full signed TimeSpan range; DbType.Time is explicitly time-of-day.
+            if (paramType == typeof(TimeSpan))
+                dbType = DbType.Object;
             if (paramType.IsEnum)
             {
                 paramType = Enum.GetUnderlyingType(paramType);

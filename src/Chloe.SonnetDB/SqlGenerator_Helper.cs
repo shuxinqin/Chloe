@@ -39,11 +39,11 @@ namespace Chloe.SonnetDB
 
         public static void DbFunction_DATEADD(SqlGeneratorBase generator, string interval, DbMethodCallExpression exp)
         {
-            generator.SqlBuilder.Append("TO_DATETIME(DATE_ADD_DATETIME(");
+            generator.SqlBuilder.Append("DATE_ADD_DATETIME(");
             exp.Object.Accept(generator);
             generator.SqlBuilder.Append(",");
             exp.Arguments[0].Accept(generator);
-            generator.SqlBuilder.Append(",'", interval, "'))");
+            generator.SqlBuilder.Append(",'", interval, "')");
         }
 
         public static void DbFunction_DATEPART(SqlGeneratorBase generator, string interval, DbExpression exp)

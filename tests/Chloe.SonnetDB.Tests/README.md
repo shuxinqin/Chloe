@@ -1,4 +1,28 @@
-这些测试使用发布的 `SonnetDB` NuGet 包 **4.0.0**，通过真实 `SndbConnection` 验证 Chloe provider，不使用模拟数据库或本地 SonnetDB 源码引用。
+# SonnetDB provider 验证
+
+当前测试项目引用 **SonnetDB 5.0.0**，通过真实 `SndbConnection` 验证适配；能力映射及保留的限制以 [5.0 能力清单](../../docs/sonnetdb-support.md) 为准。
+
+```powershell
+dotnet test tests/Chloe.SonnetDB.Tests/Chloe.SonnetDB.Tests.csproj -c Release
+```
+
+默认使用独立嵌入式目录；设置 `CHLOE_SONNETDB_CONNECTION_STRING` 可运行相同完整套件，分别指定 `Protocol=rest` 和 `Protocol=frame-http2` 及匹配的服务端口。远程数据库应专用于验收，测试会创建、删除固定名称的表。本机服务设置 `NO_PROXY=127.0.0.1,localhost`。
+
+2026-11-03 的 5.0 候选验证使用候选包及匹配 Server，未使用本地 SonnetDB 源码引用或 mock。Chloe 5.56 基线的三个模式均为 **101/101 通过、0 失败、0 跳过**；该结果不替代当前 5.57 合并源码的重新验证。必须检查实际 TRX 计数、加载的包与 Server 身份；测试适配器未发现测试或仅有进程退出 0 都不能算通过。最终公开 5.0 包发布后仍需独立缓存重新编译及三模式验证。
+
+2026-11-04 已合并上游 Chloe 5.57 源码（`e52d633f`），保留本 PR 的事务失败回滚清理；完整三模式重新取得 **101/101、0 失败、0 跳过**，两个查询过滤器回归现为正向断言。该轮仍绑定 SonnetDB `455bf3b5` 候选及匹配 Server，后续最终发行提交和公开包需要独立复验。
+
+上游 Chloe 5.57 已修复 #434。当前两个 `Category=FrameworkRegression` 测试分别在 SonnetDB 和真实 SQLite 上要求已缓存的查询立即遵守新过滤器；旧 5.56 的两个缺陷现状断言已由正向回归取代。其余测试覆盖原生正向行为与明确不支持的边界，不能把全部计数宣传为正向功能数。`GapContractTests.cs` 沿用已有文件名，当前内容已经验证 5.0 修复后的正向行为；旧 4.0 的拒绝/缺陷断言只作为下面的历史证据。
+
+新 DateTime 映射使用 DATETIME2 并保留 100ns ticks；显式 legacy DATETIME 继续采用毫秒合同，拒绝丢失精度的绑定。Decimal、schema、sequence、持续时长、注释等当前能力见 5.0 清单。NoLock、复杂来源 UpdLock、部分隔离级别及 schema-qualified sequence 仍有明确限制。
+
+候选验证、上游合入、Chloe 核心/适配包发布及公开包消费者验收是不同状态。核心回滚清理修复须随包含它的新版本一同发布；旧的已发布 Chloe 核心不会自动获得这些修复。
+
+## 历史：2026-10-09 SonnetDB 4.0.0
+
+以下保留原 4.0 包/Server 的负控制与缺口证据，所有“当前”“尚未完成”均仅指该历史版本，不是 5.0 能力结论；旧 TRX 及后补单测也不能替代 5.0 验证。
+
+这些历史测试使用发布的 `SonnetDB` NuGet 包 **4.0.0**，通过真实 `SndbConnection` 验证 Chloe provider，不使用模拟数据库或本地 SonnetDB 源码引用。
 
 ```powershell
 dotnet test tests/Chloe.SonnetDB.Tests/Chloe.SonnetDB.Tests.csproj

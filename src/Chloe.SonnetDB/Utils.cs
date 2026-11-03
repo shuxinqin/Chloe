@@ -5,25 +5,21 @@ namespace Chloe.SonnetDB
         public static void EnsureSupportedMappingType(Type type)
         {
             type = Nullable.GetUnderlyingType(type) ?? type;
-            if (type == typeof(DateTimeOffset))
-                throw new NotSupportedException("SonnetDB's general ADO.NET reader returns DateTime values for DATETIME columns, which are incompatible with Chloe's DateTimeOffset value converter. See https://github.com/IoTSharp/SonnetDB/issues/251.");
-            if (type == typeof(TimeSpan))
-                throw new NotSupportedException("SonnetDB TIME represents a time of day and cannot preserve the full CLR TimeSpan duration range. See https://github.com/IoTSharp/SonnetDB/issues/252.");
         }
 
         public static void EnsureSupportedValue(object value)
         {
-            if (value is DateTime dateTime && dateTime.Ticks % TimeSpan.TicksPerMillisecond != 0)
-                throw new NotSupportedException("SonnetDB DATETIME currently stores millisecond precision and cannot preserve submillisecond ticks. See https://github.com/IoTSharp/SonnetDB/issues/236.");
         }
 
         public static object NormalizeParameterValue(object value)
         {
-            if (value is DateTime dateTime && dateTime.Kind == DateTimeKind.Local)
-                return DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified);
-
+            // Chloe models CLR DateTime as a wall-clock value; DATETIME2 preserves its ticks.
+            if (value is DateTime local && local.Kind == DateTimeKind.Local)
+                return DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
             return value;
         }
+
+        public static string QuoteTable(string name, string schema) => string.IsNullOrEmpty(schema) ? QuoteName(name) : QuoteName(schema) + "." + QuoteName(name);
 
         public static string QuoteName(string name)
         {

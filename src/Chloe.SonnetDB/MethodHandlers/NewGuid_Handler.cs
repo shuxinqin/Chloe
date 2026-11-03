@@ -8,7 +8,7 @@ namespace Chloe.SonnetDB.MethodHandlers
     {
         public override void Process(DbMethodCallExpression exp, SqlGeneratorBase generator)
         {
-            throw new NotSupportedException("SonnetDB does not provide a server side UUID function for Guid.NewGuid(). See https://github.com/IoTSharp/SonnetDB/issues/258.");
+            generator.SqlBuilder.Append("uuid()");
         }
     }
 }

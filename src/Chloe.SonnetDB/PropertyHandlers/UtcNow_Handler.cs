@@ -9,7 +9,7 @@ namespace Chloe.SonnetDB.PropertyHandlers
         public override void Process(DbMemberAccessExpression exp, SqlGeneratorBase generator)
         {
             Utils.EnsureSupportedMappingType(exp.Type);
-            generator.SqlBuilder.Append("TO_DATETIME(CURRENT_UTC_DATETIME())");
+            generator.SqlBuilder.Append("CURRENT_UTC_DATETIME()");
         }
     }
 }

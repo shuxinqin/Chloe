@@ -100,6 +100,12 @@ namespace Chloe.SonnetDB
                 if (propertyDescriptor.IsAutoIncrement)
                     continue;
 
+                if (propertyDescriptor.HasSequence())
+                {
+                    insertExpression.AppendInsertColumn(propertyDescriptor.Column, PublicHelper.MakeNextValueForSequenceDbExpression(propertyDescriptor, null));
+                    continue;
+                }
+
                 object val = propertyDescriptor.GetValue(entity);
                 Utils.EnsureSupportedValue(val);
                 val = Utils.NormalizeParameterValue(val);
@@ -128,16 +134,15 @@ namespace Chloe.SonnetDB
                 insertExpression.AppendInsertColumn(firstIgnoredProperty.Column, valExp);
             }
 
-            if (typeDescriptor.AutoIncrement != null)
-                insertExpression.Returns.Add(typeDescriptor.AutoIncrement.Column);
+            var generatedProperties = typeDescriptor.PrimitivePropertyDescriptors.Where(a => a.IsAutoIncrement || a.HasSequence()).ToList();
+            foreach (var generated in generatedProperties) insertExpression.Returns.Add(generated.Column);
 
             insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
             {
                 return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, entity, exp);
             }, insertExpression);
 
-            PrimitivePropertyDescriptor autoIncrementPropertyDescriptor = typeDescriptor.AutoIncrement;
-            if (autoIncrementPropertyDescriptor == null)
+            if (generatedProperties.Count == 0)
             {
                 await this.ExecuteNonQuery(insertExpression, @async);
                 return entity;
@@ -148,15 +153,21 @@ namespace Chloe.SonnetDB
 
 
 
-            object retIdentity = await this.ExecuteScalar(dbCommandInfo, @async);
-
-            if (retIdentity == null || retIdentity == DBNull.Value)
+            if (generatedProperties.Count == 1)
             {
-                throw new ChloeException("Unable to get the identity value.");
+                object generated = await this.ExecuteScalar(dbCommandInfo, @async);
+                if (generated == null || generated == DBNull.Value) throw new ChloeException("Unable to get generated value.");
+                generatedProperties[0].SetValue(entity, PublicHelper.ConvertObjectType(generated, generatedProperties[0].PropertyType));
+                return entity;
             }
-
-            retIdentity = PublicHelper.ConvertObjectType(retIdentity, autoIncrementPropertyDescriptor.PropertyType);
-            autoIncrementPropertyDescriptor.SetValue(entity, retIdentity);
+            using (IDataReader reader = @async
+                ? await this.Session.ExecuteReaderAsync(dbCommandInfo.CommandText, dbCommandInfo.GetParameters())
+                : this.Session.ExecuteReader(dbCommandInfo.CommandText, dbCommandInfo.GetParameters()))
+            {
+                if (!reader.Read()) throw new ChloeException("Unable to get generated values.");
+                for (int i = 0; i < generatedProperties.Count; i++)
+                    generatedProperties[i].SetValue(entity, PublicHelper.ConvertObjectType(reader.GetValue(i), generatedProperties[i].PropertyType));
+            }
             return entity;
         }
 
@@ -208,13 +219,16 @@ namespace Chloe.SonnetDB
             if (keyPropertyDescriptor != null)
             {
                 //主键为空并且主键又不是自增列
-                if (keyVal == null && !keyPropertyDescriptor.IsAutoIncrement)
+                if (keyVal == null && !keyPropertyDescriptor.IsAutoIncrement && !keyPropertyDescriptor.HasSequence())
                 {
                     PublicHelper.EnsurePrimaryKeyNotNull(keyPropertyDescriptor, keyVal);
                 }
             }
 
-            if (keyPropertyDescriptor != null && keyPropertyDescriptor.IsAutoIncrement)
+            foreach (var property in typeDescriptor.PrimitivePropertyDescriptors.Where(a => a.HasSequence()))
+                if (!insertExpression.InsertColumns.Any(a => a.Column == property.Column))
+                    insertExpression.AppendInsertColumn(property.Column, PublicHelper.MakeNextValueForSequenceDbExpression(property, null));
+            if (keyPropertyDescriptor != null && (keyPropertyDescriptor.IsAutoIncrement || keyPropertyDescriptor.HasSequence()))
                 insertExpression.Returns.Add(keyPropertyDescriptor.Column);
 
             insertExpression = this.ExecuteDbContextInterceptor((dbContextInterceptor, exp) =>
@@ -222,7 +236,7 @@ namespace Chloe.SonnetDB
                 return dbContextInterceptor.InsertExecuting<TEntity>(this.Context, content, exp);
             }, insertExpression);
 
-            if (keyPropertyDescriptor == null || !keyPropertyDescriptor.IsAutoIncrement)
+            if (keyPropertyDescriptor == null || (!keyPropertyDescriptor.IsAutoIncrement && !keyPropertyDescriptor.HasSequence()))
             {
                 await this.ExecuteNonQuery(insertExpression, @async);
                 return keyVal; /* It will return null if an entity does not define primary key. */
@@ -238,16 +252,12 @@ namespace Chloe.SonnetDB
                 throw new ChloeException("Unable to get the identity value.");
             }
 
-            retIdentity = PublicHelper.ConvertObjectType(retIdentity, typeDescriptor.AutoIncrement.PropertyType);
+            retIdentity = PublicHelper.ConvertObjectType(retIdentity, keyPropertyDescriptor.PropertyType);
             return retIdentity;
         }
 
         static void EnsureInsertMappingSupported(TypeDescriptor typeDescriptor)
         {
-            if (typeDescriptor.PrimaryKeys.Count == 0)
-                throw new NotSupportedException("SonnetDB cannot write relational tables without a primary key. See https://github.com/IoTSharp/SonnetDB/issues/253.");
-            if (typeDescriptor.PrimitivePropertyDescriptors.Any(a => a.HasSequence()))
-                throw new NotSupportedException("SonnetDB does not support database sequences. See https://github.com/IoTSharp/SonnetDB/issues/231.");
             foreach (var property in typeDescriptor.PrimitivePropertyDescriptors)
                 Utils.EnsureSupportedMappingType(property.PropertyType);
         }
@@ -303,6 +313,12 @@ namespace Chloe.SonnetDB
                             if (j > 0)
                                 sql.Append(",");
                             PrimitivePropertyDescriptor property = properties[j];
+                            if (property.HasSequence())
+                            {
+                                if (!string.IsNullOrEmpty(property.Definition.SequenceSchema)) throw new NotSupportedException("SonnetDB sequences have one database-wide namespace.");
+                                sql.Append("nextval('").Append(Utils.QuoteName(property.Definition.SequenceName).Replace("'", "''")).Append("')");
+                                continue;
+                            }
                             object value = property.GetValue(entities[i]);
                             Utils.EnsureSupportedValue(value);
                             value = Utils.NormalizeParameterValue(value);
@@ -312,7 +328,10 @@ namespace Chloe.SonnetDB
                             if (value != null && value.GetType().IsEnum)
                                 value = Convert.ChangeType(value, Enum.GetUnderlyingType(value.GetType()));
                             DbType? dbType = property.Column.DbType;
+                            if ((Nullable.GetUnderlyingType(valueType) ?? valueType) == typeof(DateTime) && (dbType == null || dbType == DbType.DateTime)) dbType = DbType.DateTime2;
                             Type underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
+                            if (underlyingType == typeof(TimeSpan))
+                                dbType = DbType.Object;
                             if (underlyingType.IsEnum)
                                 underlyingType = Enum.GetUnderlyingType(underlyingType);
                             if (underlyingType == typeof(sbyte) || underlyingType == typeof(ushort) || underlyingType == typeof(uint))
@@ -393,10 +412,7 @@ namespace Chloe.SonnetDB
 
         static string AppendTableName(DbTable table)
         {
-            if (!string.IsNullOrEmpty(table.Schema))
-                throw new NotSupportedException("SonnetDB does not support database schemas. See https://github.com/IoTSharp/SonnetDB/issues/232.");
-
-            return Utils.QuoteName(table.Name);
+            return Utils.QuoteTable(table.Name, table.Schema);
         }
     }
 }

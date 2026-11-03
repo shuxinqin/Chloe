@@ -32,6 +32,14 @@ namespace Chloe.Query
                     case RootQueryExpression rootQueryExpression:
                         hash.Add(rootQueryExpression.ExplicitTable);
                         hash.Add(rootQueryExpression.Lock);
+                        for (int i = 0; i < rootQueryExpression.GlobalFilters.Count; i++)
+                        {
+                            AddExpressionToHashIfNotNull(rootQueryExpression.GlobalFilters[i]);
+                        }
+                        for (int i = 0; i < rootQueryExpression.ContextFilters.Count; i++)
+                        {
+                            AddExpressionToHashIfNotNull(rootQueryExpression.ContextFilters[i]);
+                        }
                         break;
                     case WhereExpression whereExpression:
                         AddExpressionToHashIfNotNull(whereExpression.Predicate);
@@ -224,7 +232,38 @@ namespace Chloe.Query
 
             bool CompareRootQuery(RootQueryExpression left, RootQueryExpression right)
             {
-                return left.ExplicitTable == right.ExplicitTable && left.Lock == right.Lock;
+                if (left.ExplicitTable != right.ExplicitTable || left.Lock != right.Lock)
+                {
+                    return false;
+                }
+
+                if (left.GlobalFilters.Count != right.GlobalFilters.Count)
+                {
+                    return false;
+                }
+
+                if (left.ContextFilters.Count != right.ContextFilters.Count)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < left.GlobalFilters.Count; i++)
+                {
+                    if (!ExpressionEqualityComparer.Instance.Equals(left.GlobalFilters[i], right.GlobalFilters[i]))
+                    {
+                        return false;
+                    }
+                }
+
+                for (int i = 0; i < left.ContextFilters.Count; i++)
+                {
+                    if (!ExpressionEqualityComparer.Instance.Equals(left.ContextFilters[i], right.ContextFilters[i]))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
             bool CompareWhere(WhereExpression left, WhereExpression right)

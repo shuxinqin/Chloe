@@ -9,7 +9,13 @@ namespace Chloe.SonnetDB.MethodHandlers
         public override void Process(DbMethodCallExpression exp, SqlGeneratorBase generator)
         {
             if (exp.Method.ReturnType == typeof(ulong))
-                throw new NotSupportedException("SonnetDB's DECIMAL conversion does not enforce the CLR UInt64.Parse integer contract. See https://github.com/IoTSharp/SonnetDB/issues/260.");
+            {
+                // Candidate for SonnetDB's documented bounded ASCII grammar, not all CLR Parse overloads/cultures.
+                generator.SqlBuilder.Append("parse_uint64(");
+                exp.Arguments[0].Accept(generator);
+                generator.SqlBuilder.Append(")");
+                return;
+            }
 
             base.Process(exp, generator);
         }
