@@ -177,7 +177,14 @@ namespace Chloe
                 throw new ChloeException("Current session does not open a transaction.");
             }
 
-            this.RollbackTransactionImpl();
+            try
+            {
+                this.RollbackTransactionImpl();
+            }
+            finally
+            {
+                this.IsInTransaction = false;
+            }
         }
         void RollbackTransactionImpl()
         {

@@ -13,11 +13,26 @@ The query interface is similar to LINQ. You can query data like LINQ and do any 
 | Oracle  | Install-Package Chloe.Oracle  |
 | SQLite  | Install-Package Chloe.SQLite  |
 | PostgreSQL  | Install-Package Chloe.PostgreSQL  |
+| SonnetDB  | Install-Package Chloe.SonnetDB (待发布) |
 | 达梦  | Install-Package Chloe.Dameng  |
 | 人大金仓  | Install-Package Chloe.KingbaseES  |
 
 # License
 [MIT](http://opensource.org/licenses/MIT) License
+
+## SonnetDB
+
+SonnetDB 适配使用原生关系 SQL，与其他数据库适配一样接受连接工厂：
+
+```C#
+using Chloe.SonnetDB;
+using SonnetDB.Data;
+
+using var context = new SonnetDBContext(
+    () => new SndbConnection("Data Source=./chloe-data"));
+```
+
+驱动使用 `SonnetDB` NuGet 包（程序集与命名空间为 `SonnetDB.Data`）。当前适配面向 `5.0.0`，实际驱动要求 .NET 10；适配程序集本身保持与现有 provider 相同的目标框架。5.0 候选验证、上游合入、正式 NuGet 发布与公开包消费者验收分别记录，当前候选通过不等于已完成公开发布。能力与边界见 [SonnetDB 能力清单](docs/sonnetdb-support.md)，旧 4.0 验证保留在[测试说明](tests/Chloe.SonnetDB.Tests/README.md)的历史章节。
 
 # Usage
 * **Entity**

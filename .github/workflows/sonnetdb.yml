@@ -1,0 +1,48 @@
+name: SonnetDB provider
+
+on:
+  push:
+    paths:
+      - 'src/Chloe/**'
+      - 'src/Chloe.SonnetDB/**'
+      - 'tests/Chloe.SonnetDB.Tests/**'
+      - '.github/workflows/sonnetdb.yml'
+  pull_request:
+    paths:
+      - 'src/Chloe/**'
+      - 'src/Chloe.SonnetDB/**'
+      - 'tests/Chloe.SonnetDB.Tests/**'
+      - '.github/workflows/sonnetdb.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify matching Chloe 5.57 or newer source versions
+        shell: pwsh
+        run: |
+          $core = [xml](Get-Content src/Chloe/Chloe.csproj -Raw)
+          $provider = [xml](Get-Content src/Chloe.SonnetDB/Chloe.SonnetDB.csproj -Raw)
+          $coreVersion = [version]($core.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1)
+          $providerVersion = [version]($provider.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1)
+          if ($coreVersion -lt [version]'5.57.0' -or $providerVersion -ne $coreVersion) {
+            throw 'The SonnetDB provider requires matching Chloe core/provider source versions, at least 5.57.0.'
+          }
+      - name: Build all provider targets
+        run: dotnet build src/Chloe.SonnetDB/Chloe.SonnetDB.csproj -c Release
+      - name: Test released SonnetDB package
+        run: dotnet test tests/Chloe.SonnetDB.Tests/Chloe.SonnetDB.Tests.csproj -c Release --logger "trx;LogFileName=sonnetdb.trx"
+      - name: Pack provider
+        run: dotnet pack src/Chloe.SonnetDB/Chloe.SonnetDB.csproj -c Release --no-build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sonnetdb-test-results
+          path: tests/Chloe.SonnetDB.Tests/TestResults/*.trx

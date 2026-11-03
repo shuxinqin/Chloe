@@ -8,6 +8,7 @@
     <File Path="tools/Chloe.Oracle.nuspec" />
     <File Path="tools/Chloe.PostgreSQL.nuspec" />
     <File Path="tools/Chloe.SQLite.nuspec" />
+    <File Path="tools/Chloe.SonnetDB.nuspec" />
     <File Path="tools/Chloe.SqlServer.nuspec" />
     <File Path="tools/Pack-Chloe-All.bat" />
   </Folder>
@@ -20,7 +21,9 @@
   <Project Path="Chloe.Oracle/Chloe.Oracle.csproj" />
   <Project Path="Chloe.PostgreSQL/Chloe.PostgreSQL.csproj" />
   <Project Path="Chloe.SQLite/Chloe.SQLite.csproj" />
+  <Project Path="Chloe.SonnetDB/Chloe.SonnetDB.csproj" />
   <Project Path="Chloe.SqlServer/Chloe.SqlServer.csproj" />
   <Project Path="ChloeDemo/ChloeDemo.csproj" />
+  <Project Path="../tests/Chloe.SonnetDB.Tests/Chloe.SonnetDB.Tests.csproj" />
 
 </Solution>

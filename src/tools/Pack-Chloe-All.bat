@@ -24,6 +24,9 @@ dotnet build -c Release ../Chloe.PostgreSQL/Chloe.PostgreSQL.csproj
 dotnet clean -c Release ../Chloe.SQLite/Chloe.SQLite.csproj
 dotnet build -c Release ../Chloe.SQLite/Chloe.SQLite.csproj
 
+dotnet clean -c Release ../Chloe.SonnetDB/Chloe.SonnetDB.csproj
+dotnet build -c Release ../Chloe.SonnetDB/Chloe.SonnetDB.csproj
+
 dotnet clean -c Release ../Chloe.SqlServer/Chloe.SqlServer.csproj
 dotnet build -c Release ../Chloe.SqlServer/Chloe.SqlServer.csproj
 
@@ -40,6 +43,7 @@ md packages
 .\nuget pack Chloe.Oracle.nuspec -OutputDirectory ./packages -OutputFileNamesWithoutVersion
 .\nuget pack Chloe.PostgreSQL.nuspec -OutputDirectory ./packages -OutputFileNamesWithoutVersion
 .\nuget pack Chloe.SQLite.nuspec -OutputDirectory ./packages -OutputFileNamesWithoutVersion
+.\nuget pack Chloe.SonnetDB.nuspec -OutputDirectory ./packages -OutputFileNamesWithoutVersion
 .\nuget pack Chloe.SqlServer.nuspec -OutputDirectory ./packages -OutputFileNamesWithoutVersion
 
 pause

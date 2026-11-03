@@ -93,9 +93,17 @@ namespace Chloe.Data
             {
                 throw new ChloeException("Current session does not open a transaction.");
             }
-            this.DbTransaction.Rollback();
-            this.ReleaseTransaction();
-            this.Complete();
+            try
+            {
+                this.DbTransaction.Rollback();
+            }
+            finally
+            {
+                // Some providers terminate the transaction when Commit fails.
+                // A subsequent Rollback failure must not retain that transaction.
+                this.ReleaseTransaction();
+                this.Complete();
+            }
         }
 
         public virtual IDataReader ExecuteReader(string cmdText, DbParam[] parameters, CommandType cmdType)
