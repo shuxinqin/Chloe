@@ -49,10 +49,10 @@
 		<!--MySql.Data 在一定并发下会卡，慢，不建议使用-->
 		<!--<PackageReference Include="MySql.Data" Version="8.0.28" />-->
 		<!--<PackageReference Include="Microsoft.Extensions.Primitives" Version="8.0.0" />-->
-		<PackageReference Include="MySqlConnector" Version="2.3.7" />
-		<PackageReference Include="Npgsql" Version="8.0.3" />
-		<PackageReference Include="System.Data.Odbc" Version="8.0.0" />
-		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
+		<PackageReference Include="MySqlConnector" Version="2.6.2" />
+		<PackageReference Include="Npgsql" Version="10.0.3" />
+		<PackageReference Include="System.Data.Odbc" Version="10.0.14" />
+		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.14" />
 		<Reference Include="DmProvider">
 			<HintPath>..\lib\DmProvider.dll</HintPath>
 		</Reference>
@@ -81,13 +81,13 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
-		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.4.0" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
+		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.400" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
-		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.4.0" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
+		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.400" />
 	</ItemGroup>
 
 </Project>
